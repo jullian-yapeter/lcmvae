@@ -1,4 +1,3 @@
-import cv2
 from transformers import BertTokenizer, BertModel, ViTFeatureExtractor, ViTModel
 import torch
 
@@ -55,6 +54,7 @@ class ImageCaptionEncoder():
 
 
 if __name__=="__main__":
+    import cv2
     dog_im = cv2.imread("dataset/images/dog.png")
     cat_im = cv2.imread("dataset/images/cat.png")
     images = [dog_im, cat_im]
