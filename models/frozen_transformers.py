@@ -3,10 +3,9 @@ import torch
 
 
 class BertEncoder():
-
     def __init__(self, device=None):
         self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu') if None else device
+            'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.tokenizer = BertTokenizer.from_pretrained(
             'bert-base-uncased', do_lower_case=True)
         self.model = BertModel.from_pretrained(
@@ -25,9 +24,9 @@ class BertEncoder():
 class VitEncoder():
     def __init__(self, device=None):
         self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu') if None else device
+            'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.feature_extractor = ViTFeatureExtractor.from_pretrained(
-            "google/vit-base-patch16-224-in21k")
+            "google/vit-base-patch16-224-in21k", do_resize=True)
         self.model = ViTModel.from_pretrained(
             "google/vit-base-patch16-224-in21k").to(self.device)
         self.hidden_size = self.model.config.hidden_size
@@ -41,9 +40,9 @@ class VitEncoder():
 
 
 class ImageCaptionEncoder():
-    def __init__(self):
+    def __init__(self, device=None):
         self.device = torch.device(
-            'cuda' if torch.cuda.is_available() else 'cpu')
+            'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.bert = BertEncoder(device=self.device)
         self.vit = VitEncoder(device=self.device)
 
@@ -55,10 +54,13 @@ class ImageCaptionEncoder():
 
 if __name__=="__main__":
     import cv2
+    device = torch.device(
+        'cuda' if torch.cuda.is_available() else 'cpu')
+
     dog_im = cv2.imread("dataset/images/dog.png")
     cat_im = cv2.imread("dataset/images/cat.png")
     images = [dog_im, cat_im]
     captions = ["smiling happy dog", "confused orange cat"]
     
-    im_cap_encoder = ImageCaptionEncoder()
+    im_cap_encoder = ImageCaptionEncoder(device=device)
     print(im_cap_encoder.forward(images, captions).shape)
