@@ -20,6 +20,7 @@ def main():
     im_cap_embedding = im_cap_encoder.forward(images, captions)
     vae_output = vae(im_cap_embedding)
 
+    print(f"vae_output.shape: {vae_output.shape}")
     cv2.imshow("im1", vae_output[0].cpu().detach().numpy())
     cv2.waitKey(0)
 
