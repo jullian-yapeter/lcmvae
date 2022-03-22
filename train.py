@@ -2,6 +2,7 @@ from models.lcmvae import LCMVAE
 from models.params import VAE_PARAMS as VAEP
 from params import TRAIN_PARAMS as TP
 
+import numpy as np
 import matplotlib.pyplot as plt
 import torch
 
@@ -23,10 +24,11 @@ class Trainer():
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             for im_batch, cap_batch in data:
+                target_batch = np.array(im_batch)
                 self.opt.zero_grad()
                 outputs = self.lcmvae(im_batch, cap_batch)
                 target_batch = torch.tensor(
-                    im_batch).reshape(-1, 224, 224, 3).type(torch.float)
+                    target_batch).reshape(-1, 224, 224, 3).type(torch.float)
                 total_loss, rec_loss, kl_loss = self.lcmvae.loss(
                     target_batch, outputs, self.config.beta)
                 total_loss.backward()

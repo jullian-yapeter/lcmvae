@@ -15,8 +15,8 @@ def main():
 
     dog_im = cv2.imread("dataset/images/dog.png") / 255
     cat_im = cv2.imread("dataset/images/cat.png") / 255
-    dog_im.resize(224, 224, 3)
-    cat_im.resize(224, 224, 3)
+    dog_im = cv2.resize(dog_im, (224, 224))
+    cat_im = cv2.resize(cat_im, (224, 224))
     images = [dog_im, cat_im]
     dog_cap = "smiling happy dog"
     cat_cap = "confused orange cat"
