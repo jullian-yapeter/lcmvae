@@ -28,8 +28,8 @@ def main():
     data = [[dog_im, dog_cap]]
 
     lcmvae = LCMVAE(LCMVAEP, device=device)
-    # trainer = Trainer(lcmvae, TP)
-    # trainer.run(data)
+    trainer = Trainer(lcmvae, TP)
+    trainer.run(data)
 
     load_checkpoint(lcmvae)
     tester = Tester(lcmvae, TEP)

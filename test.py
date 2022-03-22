@@ -18,7 +18,7 @@ class Tester():
         for i, (im, cap) in enumerate(data):
             target = np.array(im)
             outputs = self.lcmvae.reconstruct(im, cap)
-            cv2.imwrite(f"output/{i}.jpg", outputs["reconstruction"][0].detach().numpy())
+            cv2.imwrite(f"output/{i}.jpg", outputs["reconstruction"][0].detach().numpy() * 255)
             target = torch.tensor(
                 target).reshape(-1, 224, 224, 3).type(torch.float)
             total_loss, rec_loss, kl_loss = self.lcmvae.loss(
