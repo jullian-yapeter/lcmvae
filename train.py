@@ -1,6 +1,7 @@
 from models.lcmvae import LCMVAE
 from models.params import VAE_PARAMS as VAEP
 from params import TRAIN_PARAMS as TP
+from utils import save_checkpoint
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -20,7 +21,8 @@ class Trainer():
         
     def run(self, data):
         train_it = 0
-        rec_losses, kl_losses = [], []
+        best_loss = float('inf')
+        total_losses, rec_losses, kl_losses = [], [], []
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             for im_batch, cap_batch in data:
@@ -33,8 +35,14 @@ class Trainer():
                     target_batch, outputs, self.config.beta)
                 total_loss.backward()
                 self.opt.step()
+                total_losses.append(total_loss.cpu().detach())
                 rec_losses.append(rec_loss.cpu().detach())
                 kl_losses.append(kl_loss.cpu().detach())
+                new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
+                if new_loss < best_loss:
+                    save_checkpoint(self.lcmvae)
+                    save_checkpoint(self.lcmvae.vae)
+                    best_loss = new_loss
                 if train_it % 5 == 0:
                     print(
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}")

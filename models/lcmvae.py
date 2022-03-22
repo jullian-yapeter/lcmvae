@@ -6,14 +6,14 @@ import torch.nn as nn
 
 
 class LCMVAE(nn.Module):
-    def __init__(self, VAEP, device=None):
+    def __init__(self, LCMVAEP, device=None):
         super(LCMVAE, self).__init__()
-        self.config = VAEP
+        self.config = LCMVAEP
+        self.checkpoint_file = self.config.checkpoint_file
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.im_cap_encoder = ImageCaptionEncoder(device=device)
-        self.vae = VAE(VAEP, device=device)
-        
+        self.vae = VAE(self.config.vae_params, device=device)
         
     def forward(self, images, captions):
         with torch.no_grad():

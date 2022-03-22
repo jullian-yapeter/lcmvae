@@ -1,5 +1,5 @@
 from models.lcmvae import LCMVAE
-from models.params import VAE_PARAMS as VAEP
+from models.params import LCMVAE_PARAMS as LCMVAEP
 from train import Trainer
 from params import TRAIN_PARAMS as TP
 
@@ -24,7 +24,7 @@ def main():
     # data = zip(images, captions)
     data = [[dog_im, dog_cap]]
 
-    lcmvae = LCMVAE(VAEP, device=device)
+    lcmvae = LCMVAE(LCMVAEP, device=device)
     trainer = Trainer(lcmvae, TP)
     trainer.run(data)
 

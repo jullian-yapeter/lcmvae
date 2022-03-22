@@ -4,6 +4,7 @@ import math
 import torch.nn as nn
 
 class VAE_PARAMS:
+    checkpoint_file = "vae"
     embed_dim = 768
     im_dims = [224, 224, 3]
 
@@ -28,3 +29,8 @@ class VAE_PARAMS:
         {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": math.prod(im_dims)}
     ]
+
+
+class LCMVAE_PARAMS:
+    checkpoint_file = "lcmvae"
+    vae_params = VAE_PARAMS()

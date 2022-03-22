@@ -10,6 +10,7 @@ class VAE(nn.Module):
         self.config = VAEP
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.checkpoint_file = self.config.checkpoint_file
         
         self.encoder = LinearNetwork(self.config.encoder_params, device=self.device)
         self.decoder = nn.Sequential(
