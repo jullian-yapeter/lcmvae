@@ -24,16 +24,16 @@ def main():
     dog_cap = "smiling happy dog"
     cat_cap = "confused orange cat"
     captions = [dog_cap, cat_cap]
-    # data = zip(images, captions)
-    data = [[dog_im, dog_cap]]
+    data = [[images, captions]]
 
     lcmvae = LCMVAE(LCMVAEP, device=device)
     trainer = Trainer(lcmvae, TP)
     trainer.run(data)
 
+    test_data = [[dog_im, dog_cap]]
     load_checkpoint(lcmvae)
     tester = Tester(lcmvae, TEP)
-    tester.run(data)
+    tester.run(test_data)
 
 
 if __name__=="__main__":
