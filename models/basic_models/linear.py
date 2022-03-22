@@ -10,6 +10,7 @@ class LinearNetwork(nn.Module):
         self.config = LNP
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        
         self.activation = self.config.activation
         linear_layers = nn.ModuleList()
         for i, llp in enumerate(self.config.linear_layer_params):
@@ -19,7 +20,7 @@ class LinearNetwork(nn.Module):
 
         self.model = nn.Sequential(
             *linear_layers
-        )
+        ).to(self.device)
 
     def forward(self, x):
         x.to(self.device)

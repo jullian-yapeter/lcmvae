@@ -13,6 +13,8 @@ class VAE_PARAMS:
     encoder_params.linear_layer_params = [
         {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 768},
+        {"in_dim": 768, "out_dim": 768},
+        {"in_dim": 768, "out_dim": 768},
         {"in_dim": 768, "out_dim": encoder_params.output_dim}
     ]
 
@@ -21,6 +23,8 @@ class VAE_PARAMS:
     decoder_params.activation = nn.LeakyReLU()
     decoder_params.linear_layer_params = [
         {"in_dim": embed_dim, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": math.prod(im_dims)}
     ]

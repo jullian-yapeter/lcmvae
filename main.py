@@ -1,27 +1,37 @@
-from models.frozen_transformers import ImageCaptionEncoder
-from models.vae import VAE
+from models.lcmvae import LCMVAE
 from models.params import VAE_PARAMS as VAEP
+from train import Trainer
+from params import TRAIN_PARAMS as TP
 
+import numpy as np
 import cv2
 import torch
+import torchvision.transforms as transforms
 
 def main():
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
+    transform = transforms.ToTensor()
 
-    dog_im = cv2.imread("dataset/images/dog.png")
-    cat_im = cv2.imread("dataset/images/cat.png")
+    dog_im = cv2.imread("dataset/images/dog.png") / 255
+    cat_im = cv2.imread("dataset/images/cat.png") / 255
+    dog_im.resize(224, 224, 3)
+    cat_im.resize(224, 224, 3)
     images = [dog_im, cat_im]
-    captions = ["smiling happy dog", "confused orange cat"]
+    dog_cap = "smiling happy dog"
+    cat_cap = "confused orange cat"
+    captions = [dog_cap, cat_cap]
+    # data = zip(images, captions)
+    data = [[dog_im, dog_cap]]
 
-    im_cap_encoder = ImageCaptionEncoder(device=device)
-    vae = VAE(VAEP, device=device)
+    lcmvae = LCMVAE(VAEP, device=device)
+    trainer = Trainer(lcmvae, TP)
+    trainer.run(data)
 
-    im_cap_embedding = im_cap_encoder.forward(images, captions)
-    vae_output = vae(im_cap_embedding)
+    reconstruction = lcmvae.reconstruct(dog_im, dog_cap)
 
-    print(f"vae_output.shape: {vae_output.shape}")
-    cv2.imshow("im1", vae_output[0].cpu().detach().numpy())
+    print(f"reconstruction.shape: {reconstruction[0].shape}")
+    cv2.imshow("reconstruction", reconstruction[0].cpu().detach().numpy())
     cv2.waitKey(0)
 
 
