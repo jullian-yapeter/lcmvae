@@ -27,6 +27,6 @@ class LCMVAE(nn.Module):
     def reconstruct(self, images, captions):
         with torch.no_grad():
             im_cap_embedding = self.im_cap_encoder.forward(images, captions)
-        reconstruction = self.vae.reconstruct(im_cap_embedding)
-        return reconstruction
+        vae_outputs = self.vae.reconstruct(im_cap_embedding)
+        return vae_outputs
     

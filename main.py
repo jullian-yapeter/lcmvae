@@ -1,7 +1,10 @@
 from models.lcmvae import LCMVAE
 from models.params import LCMVAE_PARAMS as LCMVAEP
 from train import Trainer
+from test import Tester
 from params import TRAIN_PARAMS as TP
+from params import TEST_PARAMS as TEP
+from utils import load_checkpoint
 
 import numpy as np
 import cv2
@@ -25,14 +28,12 @@ def main():
     data = [[dog_im, dog_cap]]
 
     lcmvae = LCMVAE(LCMVAEP, device=device)
-    trainer = Trainer(lcmvae, TP)
-    trainer.run(data)
+    # trainer = Trainer(lcmvae, TP)
+    # trainer.run(data)
 
-    reconstruction = lcmvae.reconstruct(dog_im, dog_cap)
-
-    print(f"reconstruction.shape: {reconstruction[0].shape}")
-    cv2.imshow("reconstruction", reconstruction[0].cpu().detach().numpy())
-    cv2.waitKey(0)
+    load_checkpoint(lcmvae)
+    tester = Tester(lcmvae, TEP)
+    tester.run(data)
 
 
 if __name__=="__main__":

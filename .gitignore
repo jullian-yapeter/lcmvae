@@ -1,5 +1,6 @@
 /env
 /dataset
 /saved_models
+/output
 __pycache__/
 .DS_Store

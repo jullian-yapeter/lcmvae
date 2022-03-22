@@ -11,7 +11,7 @@ class VAE(nn.Module):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.checkpoint_file = self.config.checkpoint_file
-        
+
         self.encoder = LinearNetwork(self.config.encoder_params, device=self.device)
         self.decoder = nn.Sequential(
             LinearNetwork(self.config.decoder_params),
@@ -52,9 +52,19 @@ class VAE(nn.Module):
         return (rec_loss + beta * kl_loss).type(torch.float), rec_loss, kl_loss
 
     def reconstruct(self, x):
+        # encoder_out = self.encoder(x)
+        # reconstruction = self.decoder(encoder_out[:, :self.config.embed_dim])
+        # return reconstruction.view(-1, *self.config.im_dims)
+        x.to(self.device)
         encoder_out = self.encoder(x)
-        reconstruction = self.decoder(encoder_out[:, :self.config.embed_dim])
-        return reconstruction.view(-1, *self.config.im_dims)
+        mean = encoder_out[:, :self.config.embed_dim]
+        log_sigma = encoder_out[:, self.config.embed_dim:]
+        decoder_out = self.decoder(mean)
+        return {
+            "reconstruction": decoder_out.view(-1, *self.config.im_dims),
+            "mean": mean,
+            "log_sigma": log_sigma
+        }
 
     @staticmethod
     def kl_divergence(mu1, log_sigma1, mu2, log_sigma2):
