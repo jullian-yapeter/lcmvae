@@ -4,3 +4,11 @@
 /output
 __pycache__/
 .DS_Store
+
+/data
+download.py
+*.zip*
+
+# jupyter notebook
+.ipynb_checkpoints/
+*__pycache__/
