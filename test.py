@@ -10,6 +10,8 @@ class Tester():
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.lcmvae = lcmvae
+        if self.lcmvae.config.is_mae:
+            self.lcmvae.config.mask_ratio = 0
         self.lcmvae = self.lcmvae.eval()
 
     def run(self, data):
