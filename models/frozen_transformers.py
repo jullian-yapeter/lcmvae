@@ -1,4 +1,4 @@
-from transformers import BertTokenizer, BertModel, ViTFeatureExtractor, ViTModel
+from transformers import AutoFeatureExtractor, BertTokenizer, BertModel, ViTFeatureExtractor, ViTModel, ViTMAEModel
 import torch
 
 
@@ -39,12 +39,33 @@ class VitEncoder():
         return image_embeddings
 
 
-class ImageCaptionEncoder():
+class VitMaeEncoder():
     def __init__(self, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.feature_extractor = AutoFeatureExtractor.from_pretrained(
+            "facebook/vit-mae-base")
+        self.model = ViTMAEModel.from_pretrained("facebook/vit-mae-base")
+        self.hidden_size = self.model.config.hidden_size
+
+    def forward(self, images):
+        image_features = self.feature_extractor(
+            images, return_tensors="pt").to(self.device)
+        with torch.no_grad():
+            image_embeddings = self.model(
+                **image_features).last_hidden_state[:, 0, :]
+        return image_embeddings
+
+
+class ImageCaptionEncoder():
+    def __init__(self, is_mae=True, device=None):
+        self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.bert = BertEncoder(device=self.device)
-        self.vit = VitEncoder(device=self.device)
+        if is_mae:
+            self.vit = VitMaeEncoder(device=self.device)
+        else:
+            self.vit = VitEncoder(device=self.device)
 
     def forward(self, images, captions):
         image_encodings = self.vit.forward(images)

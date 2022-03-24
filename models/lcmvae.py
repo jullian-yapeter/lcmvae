@@ -12,7 +12,7 @@ class LCMVAE(nn.Module):
         self.checkpoint_file = self.config.checkpoint_file
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        self.im_cap_encoder = ImageCaptionEncoder(device=device)
+        self.im_cap_encoder = ImageCaptionEncoder(is_mae=self.config.is_mae, device=device)
         self.vae = VAE(self.config.vae_params, device=device)
         
     def forward(self, images, captions):
