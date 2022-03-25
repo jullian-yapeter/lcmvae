@@ -6,16 +6,14 @@ from params import TRAIN_PARAMS as TP
 from params import TEST_PARAMS as TEP
 from utils import load_checkpoint
 
-import numpy as np
 import cv2
 import torch
-import torchvision.transforms as transforms
+
 
 def main():
-    experiment_name = "test1"
+    experiment_name = "no_mask"
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
-    # transform = transforms.ToTensor()
 
     dog_im = cv2.imread("dataset/images/dog.png") / 255
     cat_im = cv2.imread("dataset/images/cat.png") / 255
@@ -36,7 +34,9 @@ def main():
     tester = Tester(lcmvae, TEP, experiment_name=experiment_name)
     tester.run(test_data)
 
-    lcmvae.run([dog_im], [dog_cap], f"output/{experiment_name}.jpg")
+    reconstruction, mask = lcmvae.run([dog_im], [dog_cap])
+    print(mask)
+    cv2.imwrite(f"output/{experiment_name}.jpg", reconstruction)
 
 
 if __name__=="__main__":

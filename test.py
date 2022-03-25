@@ -12,17 +12,16 @@ class Tester():
         self.name = experiment_name
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
-        self.lcmvae = lcmvae
-        if self.lcmvae.config.is_mae:
-            self.lcmvae.config.mask_ratio = 0
-        self.lcmvae = self.lcmvae.eval()
+        self.lcmvae = lcmvae.eval()
+        # if self.lcmvae.config.is_mae:
+        #     self.lcmvae.config.mask_ratio = 0
 
     def run(self, data):
         test_it = 0
         total_losses, rec_losses, kl_losses = [], [], []
         for i, (im, cap) in enumerate(data):
             target = np.array(im)
-            outputs = self.lcmvae.reconstruct(im, cap)
+            outputs, _ = self.lcmvae.reconstruct(im, cap)
             # cv2.imwrite(f"output/{i}.jpg", outputs["reconstruction"][0].detach().numpy() * 255)
             target = torch.tensor(
                 target).reshape(-1, 224, 224, 3).type(torch.float)

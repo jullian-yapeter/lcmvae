@@ -1,5 +1,6 @@
 from transformers import AutoFeatureExtractor, BertTokenizer, BertModel, ViTFeatureExtractor, ViTModel, ViTMAEModel
 import torch
+import cv2
 
 
 class BertEncoder():
@@ -35,42 +36,49 @@ class VitEncoder():
         image_features = self.feature_extractor(
             images, return_tensors="pt").to(self.device)
         with torch.no_grad():
-            image_embeddings = self.model(**image_features).last_hidden_state[:, 0, :]
+            image_embeddings = self.model(
+                **image_features).last_hidden_state[:, 0, :]
         return image_embeddings
 
 
 class VitMaeEncoder():
-    def __init__(self, device=None):
+    def __init__(self, mask_ratio=0.75, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.feature_extractor = AutoFeatureExtractor.from_pretrained(
             "facebook/vit-mae-base")
-        self.model = ViTMAEModel.from_pretrained("facebook/vit-mae-base")
+        self.model = ViTMAEModel.from_pretrained("facebook/vit-mae-base", mask_ratio=mask_ratio)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):
         image_features = self.feature_extractor(
             images, return_tensors="pt").to(self.device)
         with torch.no_grad():
-            image_embeddings = self.model(
-                **image_features).last_hidden_state[:, 0, :]
-        return image_embeddings
+            outputs = self.model(**image_features)
+            mask = outputs.mask
+            image_embeddings = outputs.last_hidden_state[:, 0, :]
+        return image_embeddings, mask
 
 
 class ImageCaptionEncoder():
-    def __init__(self, is_mae=True, device=None):
+    def __init__(self, is_mae=True, mask_ratio=0.75, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.bert = BertEncoder(device=self.device)
+        self.is_mae = is_mae
         if is_mae:
-            self.vit = VitMaeEncoder(device=self.device)
+            self.vit = VitMaeEncoder(mask_ratio=mask_ratio, device=self.device)
         else:
             self.vit = VitEncoder(device=self.device)
 
     def forward(self, images, captions):
-        image_encodings = self.vit.forward(images)
+        mask = None
+        if self.is_mae:
+            image_encodings, mask = self.vit.forward(images)
+        else:
+            image_encodings = self.vit.forward(images)
         caption_encodings = self.bert.forward(captions)
-        return torch.cat((image_encodings, caption_encodings), dim=-1)
+        return torch.cat((image_encodings, caption_encodings), dim=-1), mask
 
 
 if __name__=="__main__":
