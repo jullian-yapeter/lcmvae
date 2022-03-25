@@ -31,10 +31,12 @@ def main():
     trainer = Trainer(lcmvae, TP, experiment_name=experiment_name)
     trainer.run(data)
 
-    test_data = [[dog_im, dog_cap]]
+    test_data = [[dog_im, dog_cap], [cat_im, cat_cap]]
     load_checkpoint(lcmvae, name=experiment_name)
-    tester = Tester(lcmvae, TEP)
+    tester = Tester(lcmvae, TEP, experiment_name=experiment_name)
     tester.run(test_data)
+
+    lcmvae.run([dog_im], [dog_cap], f"output/{experiment_name}.jpg")
 
 
 if __name__=="__main__":
