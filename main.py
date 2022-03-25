@@ -12,9 +12,10 @@ import torch
 import torchvision.transforms as transforms
 
 def main():
+    experiment_name = "test1"
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
-    transform = transforms.ToTensor()
+    # transform = transforms.ToTensor()
 
     dog_im = cv2.imread("dataset/images/dog.png") / 255
     cat_im = cv2.imread("dataset/images/cat.png") / 255
@@ -27,13 +28,15 @@ def main():
     data = [[images, captions]]
 
     lcmvae = LCMVAE(LCMVAEP, device=device)
-    trainer = Trainer(lcmvae, TP)
+    trainer = Trainer(lcmvae, TP, experiment_name=experiment_name)
     trainer.run(data)
 
-    test_data = [[dog_im, dog_cap]]
-    load_checkpoint(lcmvae)
-    tester = Tester(lcmvae, TEP)
+    test_data = [[dog_im, dog_cap], [cat_im, cat_cap]]
+    load_checkpoint(lcmvae, name=experiment_name)
+    tester = Tester(lcmvae, TEP, experiment_name=experiment_name)
     tester.run(test_data)
+
+    lcmvae.run([dog_im], [dog_cap], f"output/{experiment_name}.jpg")
 
 
 if __name__=="__main__":

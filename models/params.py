@@ -33,4 +33,5 @@ class VAE_PARAMS:
 
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
+    is_mae = True
     vae_params = VAE_PARAMS()

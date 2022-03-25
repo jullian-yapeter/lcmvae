@@ -6,9 +6,9 @@ import torch
 
 
 class Trainer():
-    def __init__(self, lcmvae, TP):
+    def __init__(self, lcmvae, TP, experiment_name=None):
         self.config = TP
-        
+        self.name = experiment_name
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.lcmvae = lcmvae
@@ -37,8 +37,8 @@ class Trainer():
                 kl_losses.append(kl_loss.cpu().detach())
                 new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                 if new_loss < best_loss:
-                    save_checkpoint(self.lcmvae)
-                    save_checkpoint(self.lcmvae.vae)
+                    save_checkpoint(self.lcmvae, name=self.name)
+                    save_checkpoint(self.lcmvae.vae, name=self.name)
                     best_loss = new_loss
                 if train_it % 5 == 0:
                     print(
