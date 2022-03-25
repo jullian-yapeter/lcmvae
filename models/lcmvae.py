@@ -1,6 +1,7 @@
 from models.frozen_transformers import ImageCaptionEncoder
 from models.vae import VAE
 
+import cv2
 import torch
 import torch.nn as nn
 
@@ -29,4 +30,7 @@ class LCMVAE(nn.Module):
             im_cap_embedding = self.im_cap_encoder.forward(images, captions)
         vae_outputs = self.vae.reconstruct(im_cap_embedding)
         return vae_outputs
-    
+
+    def run(self, images, captions, path):
+        outputs = self.reconstruct(images, captions)
+        cv2.imwrite(path, outputs["reconstruction"][0].detach().numpy() * 255)
