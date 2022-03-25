@@ -1,5 +1,5 @@
 class TRAIN_PARAMS:
-    epochs = 200
+    epochs = 2
     learning_rate = 1e-4
     beta = 0
 

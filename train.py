@@ -11,8 +11,7 @@ class Trainer():
         self.name = experiment_name
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
-        self.lcmvae = lcmvae
-        self.lcmvae = self.lcmvae.train()
+        self.lcmvae = lcmvae.train()
         self.opt = torch.optim.Adam(self.lcmvae.parameters(),
                                lr=self.config.learning_rate)
         
@@ -25,7 +24,7 @@ class Trainer():
             for im_batch, cap_batch in data:
                 target_batch = np.array(im_batch)
                 self.opt.zero_grad()
-                outputs = self.lcmvae(im_batch, cap_batch)
+                outputs, _ = self.lcmvae(im_batch, cap_batch)
                 target_batch = torch.tensor(
                     target_batch).reshape(-1, 224, 224, 3).type(torch.float)
                 total_loss, rec_loss, kl_loss = self.lcmvae.loss(
