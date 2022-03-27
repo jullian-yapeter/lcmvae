@@ -62,11 +62,18 @@ def show_images(imgs: List[torch.Tensor]):
     """Transform image Tensors to PIL.Image and then show them.
 
     Args:
-        imgs (List[torch.Tensor]): a list of images with size [224, 224, 3]
+        imgs (List[torch.Tensor] or Image.Image): a list of images with size [224, 224, 3]
     """
+    
     fix, axs = plt.subplots(ncols=len(imgs), squeeze=False)
+    
     for i, img in enumerate(imgs):
-        img = T.ToPILImage()(img.to('cpu'))
+        if isinstance(img, torch.Tensor):
+            # print(f'Type of input: torch.Tensor')
+            img = T.ToPILImage()(img.to('cpu'))
+        else:
+             print(f'show_images only support showing torch.Tensor, but now is {type(img)}!')
+             return
         axs[0, i].imshow(np.asarray(img))
         axs[0, i].set(xticklabels=[], yticklabels=[], xticks=[], yticks=[])
         
@@ -83,9 +90,13 @@ def coco_info(cocoDataset: CocoCaptionReshape):
     print('-'*40)
     print('Number of samples:', len(cocoDataset))
     img, cap = cocoDataset[0]  # load first sample
-    assert tuple(img.shape) == (3, 224, 224)
-    print("Image Size:", img.size())
-    print("One Caption:", type(cap), 'length', len(cap))
+    if isinstance(img, torch.Tensor):
+        print("Image Size:", img.size())
+    elif isinstance(img, Image.Image):
+        print("Image Size:", img.size)
+    else:
+        print(f'coco_info does not support showing {type(img)}!')
+    print(f"Caption type: {type(cap)} 'Length: {len(cap)}")
     print('-'*40)
       
 def rand_split(dataset, train_ratio=0.7, seed=None):
@@ -118,9 +129,10 @@ if __name__ == '__main__':
 
     # Construct Dataset
     print('-'*40)
+    transform = T.PILToTensor()  # want raw image: None
     coco_val2017 = CocoCaptionReshape(root = image_dir,
                             annFile = ann_file,
-                            transform=T.PILToTensor())
+                            transform=transform)
     print('-'*40)
     # print dataset info
     # coco_info(coco_val2017)
