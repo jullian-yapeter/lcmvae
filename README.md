@@ -16,8 +16,28 @@ Language-Conditioned Masked Variational Autoencoder
   ```
   
 - [x] Create a custom Dataset class `CocoCaptionReshape` and DataLoader
+    `CocoCaptionReshape` reshape all images' size to (3, 224, 224)
 
-- [x] [Demo: pipeline of data processin](./dataload_demo.ipynb)
+- [ ] Create dataset for downstream test: segmentation
+    
+- [ ] [Demo: pipeline of data processing](./dataload_demo.ipynb) 
 
-- [ ] masking
+    - [ ] Example on how to load data for lcmvae 
+
+        FeatureExtractor focus on load data on hugging face hub, we will customize dataload with PyTorch's `Dataset` and `DataLoader`
+
+    - [ ] simple train loop for lcmvae
+
+    - [ ] Demo like [MAE's](https://github.com/facebookresearch/mae/blob/main/demo/mae_visualize.ipynb) showing original, masked ,reconstruction, reconstruction+visible, image
+
+- [x] Masking: finished with `ViTMAE`
+
 - [ ] Creating a Sufficiently Large Dataset
+
+
+
+
+Insteresting! https://arxiv.org/pdf/1907.01710.pdf
+
+Question:
+- Could reshaping shape of images be a kind of data augmentation?
