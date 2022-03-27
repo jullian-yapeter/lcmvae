@@ -33,4 +33,6 @@ class VAE_PARAMS:
 
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
+    is_mae = True
+    mask_ratio = 0.75
     vae_params = VAE_PARAMS()

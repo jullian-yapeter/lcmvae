@@ -1,4 +1,4 @@
-from models.basic_models.linear import LinearNetwork
+from models.basic_models.linear import Encoder, Decoder
 
 import torch
 import torch.nn as nn
@@ -12,11 +12,8 @@ class VAE(nn.Module):
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.checkpoint_file = self.config.checkpoint_file
 
-        self.encoder = LinearNetwork(self.config.encoder_params, device=self.device)
-        self.decoder = nn.Sequential(
-            LinearNetwork(self.config.decoder_params),
-            nn.Sigmoid()
-        ).to(self.device)
+        self.encoder = Encoder(self.config.encoder_params, device=self.device)
+        self.decoder = Decoder(self.config.decoder_params, device=self.device)
 
         self.mse_criterion = nn.MSELoss(reduction="sum")
         self.prior = {
@@ -24,17 +21,20 @@ class VAE(nn.Module):
             "log_sigma": torch.tensor([0] * self.config.embed_dim).to(self.device)
         }
 
-    def forward(self, x):
+    def forward(self, x, pretraining=True):
         x.to(self.device)
         encoder_out = self.encoder(x)
         mean = encoder_out[:, :self.config.embed_dim]
         log_sigma = encoder_out[:, self.config.embed_dim:]
-        epsilon = torch.randn(
-            x.shape[0], self.config.embed_dim).to(self.device)
-        z = mean + torch.exp(log_sigma) * epsilon
-        decoder_out = self.decoder(z)
+        reconstruction = None
+        if pretraining:
+            epsilon = torch.randn(
+                x.shape[0], self.config.embed_dim).to(self.device)
+            z = mean + torch.exp(log_sigma) * epsilon
+            decoder_out = self.decoder(z)
+            reconstruction = decoder_out.view(-1, *self.config.im_dims)
         return {
-            "reconstruction": decoder_out.view(-1, *self.config.im_dims), 
+            "reconstruction": reconstruction, 
             "mean": mean,
             "log_sigma": log_sigma
         }
@@ -52,9 +52,6 @@ class VAE(nn.Module):
         return (rec_loss + beta * kl_loss).type(torch.float), rec_loss, kl_loss
 
     def reconstruct(self, x):
-        # encoder_out = self.encoder(x)
-        # reconstruction = self.decoder(encoder_out[:, :self.config.embed_dim])
-        # return reconstruction.view(-1, *self.config.im_dims)
         x.to(self.device)
         encoder_out = self.encoder(x)
         mean = encoder_out[:, :self.config.embed_dim]
