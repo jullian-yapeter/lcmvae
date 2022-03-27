@@ -26,3 +26,23 @@ class LinearNetwork(nn.Module):
         x.to(self.device)
         out = self.model(x)
         return out
+
+class Encoder(LinearNetwork):
+    def __init__(self, encoder_params, device=None):
+        super(Encoder, self).__init__(encoder_params, device=device)
+        self.checkpoint_file = "encoder"
+
+
+class Decoder(nn.Module):
+    def __init__(self, decoder_params, device=None):
+        super(Decoder, self).__init__()
+        self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.checkpoint_file = "decoder"
+        self.model = nn.Sequential(
+            LinearNetwork(decoder_params),
+            nn.Sigmoid()
+        ).to(self.device)
+
+    def forward(self, x):
+        return self.model(x)
