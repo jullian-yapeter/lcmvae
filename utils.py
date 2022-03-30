@@ -1,7 +1,7 @@
 import torch
 import json
 from statistics import mean, variance
-
+from torch.utils.data import random_split
 
 
 def save_checkpoint(model, name=None):
@@ -39,3 +39,28 @@ def log_losses(losses, name):
     with open(f"output/{name}.json", "w") as outfile:
         json.dump(loss_log, outfile)
 
+
+###################
+#     Dataset     #
+###################
+def rand_split(dataset, train_ratio=0.7, seed=None):
+    """Split dataset by train_ratio
+
+    Args:
+        dataset (torch.utils.data.Dataset): whole dataset 
+        train_ratio (float, optional): the ratio of traing samples. Defaults to 0.7.
+        seed (None or int, optional): random seed. Defaults to None.
+
+    Returns:
+        train_data: torch.utils.data.Dataset
+        test_data: torch.utils.data.Dataset
+    """
+    # set random seed to control randomness
+    if seed:
+        torch.manual_seed(seed)
+
+    train_dataset, test_dataset = random_split(dataset, [round(train_ratio * len(dataset)), len(dataset) - round(train_ratio * len(dataset))])
+    assert len(dataset) == (len(train_dataset) + len(test_dataset))
+    
+    return train_dataset, test_dataset
+    
