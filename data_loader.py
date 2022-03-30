@@ -3,7 +3,6 @@ from torchvision.datasets import CocoCaptions
 from torchvision import transforms as T
 from transformers import AutoFeatureExtractor
 
-from utils import rand_split
 import os
 
 try:
