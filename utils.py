@@ -7,7 +7,13 @@ import os
 
 
 def save_checkpoint(model, name=None):
-    os.system('mkdir -p saved_models')  # automatically create saved_models folder
+    # automatically create saved_models folder
+    try:
+        os.mkdir('saved_models')
+        print("Directory " , 'saved_models' ,  " Created ") 
+    except FileExistsError:
+        pass
+    
     if name is not None:
         torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}_{name}")
     else:
