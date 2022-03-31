@@ -12,4 +12,8 @@ download.py
 # jupyter notebook
 .ipynb_checkpoints/
 *__pycache__/
+
 /util
+
+*prototyping*
+main_baseline*
