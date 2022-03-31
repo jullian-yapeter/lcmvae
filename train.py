@@ -27,6 +27,7 @@ class PreTrainer():
             for im_batch, cap_batch in tqdm(data, desc= f"batch_{batch_i}"):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)  
+                im_batch = im_batch.to(self.device)
                 self.opt.zero_grad()
                 outputs, _ = self.lcmvae(im_batch, cap_batch, pretraining=True)
                 # target_batch = torch.tensor(
@@ -102,6 +103,67 @@ class Trainer():
                 train_it += 1
         print("Done!")
 
+        # log the loss training curves
+        fig = plt.figure(figsize=(10, 5))
+        ax1 = plt.subplot(111)
+        ax1.plot(losses)
+        ax1.title.set_text("Head Loss")
+        plt.show()
+
+
+
+######################################################
+###################  NOT YET TESTED ##################
+######################################################
+class GeneralTrainer():
+    def __init__(self, model, config, criterion, mask_maker=None, feat_extractor=None, experiment_name=None):
+        self.config = config
+        self.name = experiment_name
+        self.device = torch.device(
+            'cuda' if torch.cuda.is_available() else 'cpu')
+        self.model = model.train()
+        self.feat_extractor = feat_extractor
+        self.mask_maker = mask_maker
+        self.criterion = criterion
+        self.opt = torch.optim.Adam(self.model.parameters(),
+                                    lr=self.config.learning_rate)
+
+    def run(self, data):
+        train_it = 0
+        best_loss = float('inf')
+        losses = []
+
+        for ep in range(self.config.epochs):
+            print("Run Epoch {}".format(ep))
+            for img_batch, cap_batch in data:
+                img_batch = img_batch.to(self.device)
+                target_batch = img_batch
+                if self.mask_maker: 
+                    img_batch, masks = self.mask_maker(img_batch)
+                if self.feat_extractor:
+                    img_batch = self.feat_extractor(img_batch)
+                print(img_batch.shape)
+
+                self.opt.zero_grad()
+                outputs, _ = self.model(img_batch, cap_batch)
+                loss = self.criterion(
+                    torch.tensor(target_batch, dtype=torch.float).reshape(-1, 3, 224, 224),
+                    outputs)
+                loss.backward()
+                self.opt.step()
+                
+                losses.append(loss.cpu().detach())
+                new_loss = sum(losses[-10:]) / len(losses[-10:])
+                if new_loss < best_loss:
+                    save_checkpoint(self.model, name=self.name)
+                    best_loss = new_loss
+                if train_it % 10 == 0:
+                    print(
+                        f"It {train_it}: Total Loss: {loss.cpu().detach()}"
+                    )
+                train_it += 1
+
+        print("Done!")
         # log the loss training curves
         fig = plt.figure(figsize=(10, 5))
         ax1 = plt.subplot(111)

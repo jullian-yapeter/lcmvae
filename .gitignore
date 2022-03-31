@@ -7,10 +7,15 @@ __pycache__/
 
 # dev_lei
 /data
-/demo
+download.py
 *.zip*
 features.md
 
 # jupyter notebook
 .ipynb_checkpoints/
 *__pycache__/
+
+/util
+
+*prototyping*
+main_baseline*
