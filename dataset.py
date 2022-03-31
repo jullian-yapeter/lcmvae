@@ -172,6 +172,7 @@ class MyCocoCaption(CocoDetection):
         self.ids = list(sorted(self.coco.imgs.keys()))
         
         self.from_pretrained = from_pretrained
+        self.feature_extractor =  AutoFeatureExtractor.from_pretrained(self.from_pretrained)
         
     # NOTE: Please choose pick first one caption or combine five captions into one, ['pick', 'combine']
     mode = 'pick'  
@@ -185,11 +186,10 @@ class MyCocoCaption(CocoDetection):
         return ' '.join(captions)
     
     def _load_image(self, id: int) -> Image.Image:
-        # HACK: feature_extractor for each image is pretty slow, try to figure out how to embed feature_extractor in torch DataLoader
+        # NOTE: feature_extractor for each image is pretty slow, try to figure out how to embed feature_extractor in torch DataLoader
         path = self.coco.loadImgs(id)[0]["file_name"]
         raw_img = Image.open(os.path.join(self.root, path)).convert("RGB")
-        feature_extractor = AutoFeatureExtractor.from_pretrained(self.from_pretrained)
-        encoding = feature_extractor(images=raw_img, return_tensors="pt")
+        encoding = self.feature_extractor(images=raw_img, return_tensors="pt")
         
         return encoding['pixel_values'][0]
     
