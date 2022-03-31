@@ -1,10 +1,13 @@
+import imp
 import torch
 import json
 from statistics import mean, variance
 from torch.utils.data import random_split
+import os
 
 
 def save_checkpoint(model, name=None):
+    os.system('mkdir -p saved_models')  # automatically create saved_models folder
     if name is not None:
         torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}_{name}")
     else:

@@ -43,7 +43,7 @@ class VAE(nn.Module):
         reconstruction_images = vae_outputs["reconstruction"]
         vae_mean = vae_outputs["mean"]
         vae_log_sigma = vae_outputs["log_sigma"]
-
+        
         rec_loss = self.mse_criterion(target_images, reconstruction_images) / target_images.shape[0]
         kl_loss = torch.mean(torch.sum(
             VAE.kl_divergence(
