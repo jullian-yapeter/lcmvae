@@ -27,6 +27,7 @@ class PreTrainer():
             for im_batch, cap_batch in tqdm(data, desc= f"batch_{batch_i}"):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)  
+                im_batch = im_batch.to(self.device)
                 self.opt.zero_grad()
                 outputs, _ = self.lcmvae(im_batch, cap_batch, pretraining=True)
                 # target_batch = torch.tensor(

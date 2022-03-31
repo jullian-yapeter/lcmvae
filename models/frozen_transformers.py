@@ -50,7 +50,8 @@ class VitMaeEncoder():
         # FIXME: feature_extractor was created during building a dataset in PreTrainer 
         # self.feature_extractor = AutoFeatureExtractor.from_pretrained(
         #     "facebook/vit-mae-base")
-        self.model = ViTMAEModel.from_pretrained("facebook/vit-mae-base", mask_ratio=mask_ratio)
+        self.model = ViTMAEModel.from_pretrained(
+            "facebook/vit-mae-base", mask_ratio=mask_ratio).to(self.device)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):
