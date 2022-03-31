@@ -1,8 +1,10 @@
+import imp
 from utils import save_checkpoint
 
 import numpy as np
 import matplotlib.pyplot as plt
 import torch
+from tqdm import tqdm
 
 
 class PreTrainer():
@@ -21,16 +23,22 @@ class PreTrainer():
         total_losses, rec_losses, kl_losses = [], [], []
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
-            for im_batch, cap_batch in data:
-                target_batch = np.array(im_batch)
+            batch_i = 0
+            for im_batch, cap_batch in tqdm(data, desc= f"batch_{batch_i}"):
+                print(batch_i)
+                # create a batch with 2 images for testing code -> (2, 224, 224, 3)
+                # target_batch = np.array(im_batch)  
                 self.opt.zero_grad()
                 outputs, _ = self.lcmvae(im_batch, cap_batch, pretraining=True)
-                target_batch = torch.tensor(
-                    target_batch).reshape(-1, 224, 224, 3).type(torch.float)
+                print(batch_i)
+                # target_batch = torch.tensor(
+                #     target_batch).reshape(-1, 224, 224, 3).type(torch.float)
+                print(outputs)
                 total_loss, rec_loss, kl_loss = self.lcmvae.loss(
-                    target_batch, outputs, self.config.beta)
+                    im_batch, outputs, self.config.beta)
                 total_loss.backward()
                 self.opt.step()
+                print(batch_i)
                 total_losses.append(total_loss.cpu().detach())
                 rec_losses.append(rec_loss.cpu().detach())
                 kl_losses.append(kl_loss.cpu().detach())
@@ -44,6 +52,7 @@ class PreTrainer():
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                     )
                 train_it += 1
+                batch_i += 1
         print("Done!")
 
         # log the loss training curves
