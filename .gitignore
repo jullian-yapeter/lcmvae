@@ -5,15 +5,24 @@
 __pycache__/
 .DS_Store
 
+# dev_lei
 /data
+<<<<<<< HEAD
 download.py
+=======
+/demo
+>>>>>>> main
 *.zip*
+features.md
 
 # jupyter notebook
 .ipynb_checkpoints/
 *__pycache__/
+<<<<<<< HEAD
 
 /util
 
 *prototyping*
 main_baseline*
+=======
+>>>>>>> main

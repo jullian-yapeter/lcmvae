@@ -15,20 +15,26 @@ import cv2
 import torch
 import torch.nn as nn
 
+from PIL import Image
+import requests
+
 
 def main():
     experiment_name = "no_mask"
     pretrain = False
-    pretest = False
+    pretest = True
     train = False
-    test = True
+    test = False
 
 
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
 
-    dog_im = cv2.imread("dataset/images/dog.png") / 255
-    cat_im = cv2.imread("dataset/images/cat.png") / 255
+    dog_url = 'data/coco/val2017/000000000139.jpg'
+    cat_url = 'data/coco/val2017/000000000285.jpg'
+    
+    dog_im = cv2.imread(dog_url)
+    cat_im = cv2.imread(cat_url)
     dog_im = cv2.resize(dog_im, (224, 224))
     cat_im = cv2.resize(cat_im, (224, 224))
     images = [dog_im, cat_im]
@@ -36,7 +42,7 @@ def main():
     cat_cap = "confused orange cat"
     captions = [dog_cap, cat_cap]
     data = [[images, captions]]
-
+    
     lcmvae = LCMVAE(LCMVAEP, device=device)
     if pretrain:
         pretrainer = PreTrainer(lcmvae, PTP, experiment_name=experiment_name+"_pretrain")
