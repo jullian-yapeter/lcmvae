@@ -5,7 +5,8 @@ import torch.nn as nn
 
 
 class ReconstructionHead(nn.Module):
-    def __init__(self, decoder_params, im_dims=(224, 224, 3), device=None):
+    # NOTE: im_dims should be (3,224,224)
+    def __init__(self, decoder_params, im_dims=(3, 224, 224), device=None):
         super(ReconstructionHead, self).__init__()
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
@@ -19,7 +20,8 @@ class ReconstructionHead(nn.Module):
 
 
 class SegmentationHead(nn.Module):
-    def __init__(self, decoder_params, im_dims=(224, 224, 3), device=None):
+    # NOTE: im_dims should be (3,224,224)
+    def __init__(self, decoder_params, im_dims=(3, 224, 224), device=None):
         super(SegmentationHead, self).__init__()
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device

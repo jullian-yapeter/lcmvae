@@ -26,18 +26,20 @@ class VitEncoder():
     def __init__(self, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        self.feature_extractor = ViTFeatureExtractor.from_pretrained(
-            "google/vit-base-patch16-224-in21k", do_resize=True)
+        # FIXME: feature_extractor was created during building a dataset in PreTrainer 
+        # self.feature_extractor = ViTFeatureExtractor.from_pretrained(
+        #     "google/vit-base-patch16-224-in21k", do_resize=True)
+        # FIXME: dataset.MyCocoCaption is using 'google/vit-base-patch16-224'
         self.model = ViTModel.from_pretrained(
             "google/vit-base-patch16-224-in21k").to(self.device)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):
-        image_features = self.feature_extractor(
-            images, return_tensors="pt").to(self.device)
+        # image_features = self.feature_extractor(
+        #     images, return_tensors="pt").to(self.device)
         with torch.no_grad():
             image_embeddings = self.model(
-                **image_features).last_hidden_state[:, 0, :]
+                images).last_hidden_state[:, 0, :]
         return image_embeddings
 
 
@@ -45,16 +47,18 @@ class VitMaeEncoder():
     def __init__(self, mask_ratio=0.75, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        self.feature_extractor = AutoFeatureExtractor.from_pretrained(
-            "facebook/vit-mae-base")
+        # FIXME: feature_extractor was created during building a dataset in PreTrainer 
+        # self.feature_extractor = AutoFeatureExtractor.from_pretrained(
+        #     "facebook/vit-mae-base")
         self.model = ViTMAEModel.from_pretrained("facebook/vit-mae-base", mask_ratio=mask_ratio)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):
-        image_features = self.feature_extractor(
-            images, return_tensors="pt").to(self.device)
+        # FIXME: feature_extractor was created during building a dataset in PreTrainer 
+        # image_features = self.feature_extractor(
+        #     images, return_tensors="pt").to(self.device)
         with torch.no_grad():
-            outputs = self.model(**image_features)
+            outputs = self.model(images)
             mask = outputs.mask
             image_embeddings = outputs.last_hidden_state[:, 0, :]
         return image_embeddings, mask
