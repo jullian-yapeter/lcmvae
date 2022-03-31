@@ -133,8 +133,6 @@ class MyCocoDetection(CocoDetection):
         return image, target
 
 
-# NOTE: deprecated for training due to it's to slow to apply AutoFeatureExtractor for each image 
-# TODO: apply AutoFeatureExtractor on 
 class MyCocoCaption(CocoDetection):
     """Create a custom Dataset from torchvision.datasets.CocoDetection 
     (source: https://pytorch.org/vision/stable/_modules/torchvision/datasets/coco.html#CocoDetection)
@@ -146,7 +144,7 @@ class MyCocoCaption(CocoDetection):
         reshape each image (3, _, _) -> (3, IMG_W, IMG_H), default IMG_W = IMG_H = 224
         # NOTE: reshaping images will reduce images' quality, does it okay?
         # NOTE: ViT : resize to 256 -> do center crop to 224 -> transform images to tensor and normalize them. All these step could finished automatically by feature_extractor()
-        # TODO: use AutoFeatureExtractor() to reshape images
+        # [x]: use AutoFeatureExtractor() to reshape images
         
     _load_target:
         Each image corresponds to 5 captions.
@@ -174,7 +172,7 @@ class MyCocoCaption(CocoDetection):
         self.from_pretrained = from_pretrained
         self.feature_extractor =  AutoFeatureExtractor.from_pretrained(self.from_pretrained)
         
-    # NOTE: Please choose pick first one caption or combine five captions into one, ['pick', 'combine']
+    # NOTE: Please choose pick first one caption or combine 5 captions into one. `mode` in ['pick', 'combine']
     mode = 'pick'  
     def _captions2str(self, id: int, mode=mode) -> str:
         if mode not in ['pick', 'combine']:
@@ -186,75 +184,56 @@ class MyCocoCaption(CocoDetection):
         return ' '.join(captions)
     
     def _load_image(self, id: int) -> Image.Image:
-        # NOTE: feature_extractor for each image is pretty slow, try to figure out how to embed feature_extractor in torch DataLoader
+        # NOTE: constructing AutoFeatureExtractor for each image is pretty slow, leave it outside of _load_image()
         path = self.coco.loadImgs(id)[0]["file_name"]
         raw_img = Image.open(os.path.join(self.root, path)).convert("RGB")
         encoding = self.feature_extractor(images=raw_img, return_tensors="pt")
         
         return encoding['pixel_values'][0]
     
-    
-    def _load_target(self, id: int) -> List[str]:
-        return [ann["caption"] for ann in super()._load_target(id)]
+    # def _load_target(self, id: int) -> List[str]:
+    #     return [ann["caption"] for ann in super()._load_target(id)]
 
     def _load_target(self, id: int) -> List[str]:
         return self._captions2str(id)
  
 
 if __name__ == "__main__":
-    # require coco_val2017
+    # coco_val2017
     data_root = './data'
     dataType = 'val2017'
     image_dir = f'{data_root}/coco/val2017/'
-    ann_file = f'{data_root}/coco/ann_trainval2017/instances_{dataType}.json'  # instances_val2017.json
-
-    IMG_W = IMG_H = 224
-
-    # NOTE: output of dataset is image, anns (or caption). get segmentation after build dataset.
-    def get_transform(train=True):
-        # raw image: None, tensor: torchvision.transforms.PILToTensor()  
-        transforms = [T.PILToTensor(), 
-                      T.Resize(size=(IMG_W,IMG_H))]
-        return T.Compose(transforms)
+    ann_file = f'{data_root}/coco/ann_trainval2017/captions_{dataType}.json'
 
     # Construct Dataset
-    print('-'*40) 
-    coco_val2017_detect = MyCocoDetection(root = image_dir,
-                                        annFile = ann_file,
-                                        transforms=None)
+    transform = None
+    from_pretrained = 'google/vit-base-patch16-224'
+
+    coco_val2017 = MyCocoCaption(root = image_dir,
+                                annFile = ann_file,
+                                transform = transform,
+                                from_pretrained = from_pretrained)
+
+    # Check the info of dataset, you can ignore this part
     print('-'*40)
-
-    # collate_fn needs for batch, 
-    # sif don't customize if, dataloader can't batched loading from a map-style dataset (our target is a dict)
-    # collate_fn (callable, optional): merges a list of samples to form 
-    # a mini-batch of Tensor(s).  
-    # Used when using batched loading from a map-style dataset.
-    # TODO: figure out how collate_fn work
-    def collate_fn(batch):
-        return list(zip(*batch))
-
-    batch_size = 64
-    train_ratio = 0.7
+    coco_val2017.coco.info()
+    print('-'*40)
+    print(f'The number of samples: {len(coco_val2017)}')
+    first_img, first_cap = coco_val2017[0]
+    print(f'Image shape: {first_img.size()}')
+    
+    # Build Dataloader for traing and testing
+    batch_size = 512
     shuffle = False
     n_workers = 0
+    # WARN: when n_workers > 0, DataLoader will work slowly due to unknow reasons.
 
-    data_loader = DataLoader(coco_val2017_detect, 
-                            batch_size=batch_size, 
-                            shuffle=shuffle, 
-                            num_workers=n_workers,
-                            collate_fn=collate_fn)
+    data_loader = DataLoader(coco_val2017, batch_size, shuffle, num_workers=n_workers)
 
-    # select device (whether GPU or CPU)
-    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
-
-    # print info of dataloader
+    # Check: print info for each batch
     i = 0
-    for imgs, annotations in data_loader:
-        # imgs = list(img for img in imgs)
-        for ann in annotations:
-            for key in ann:
-                # 'image_id': int, 'segments': list (due to size diff)
-                if key not in ['image_id', 'segments']: 
-                    ann[key] = ann[key].to(device)
-        print(f'done batch {i}')
-        i+=1
+    for imgs, caps in data_loader:
+        print(f'batch_{i}')
+        print(f"Image batch shape: {imgs.size()}")
+        print(f"Caption batch shape: {len(caps)}")
+        i += 1
