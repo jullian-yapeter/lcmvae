@@ -5,11 +5,11 @@
 __pycache__/
 .DS_Store
 
+# dev_lei
 /data
 /demo
-/util
-download.py
 *.zip*
+features.md
 
 # jupyter notebook
 .ipynb_checkpoints/
