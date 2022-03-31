@@ -7,6 +7,7 @@ __pycache__/
 
 /data
 /demo
+/util
 download.py
 *.zip*
 
