@@ -6,7 +6,7 @@ import torch.nn as nn
 class VAE_PARAMS:
     checkpoint_file = "vae"
     embed_dim = 768
-    im_dims = [224, 224, 3]
+    im_dims = [3, 224, 224]
 
     encoder_params = LINEAR_NETWORK_PARAMS()
     encoder_params.output_dim = embed_dim * 2

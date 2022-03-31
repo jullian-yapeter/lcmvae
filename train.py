@@ -25,20 +25,17 @@ class PreTrainer():
             print("Run Epoch {}".format(ep))
             batch_i = 0
             for im_batch, cap_batch in tqdm(data, desc= f"batch_{batch_i}"):
-                print(batch_i)
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)  
                 self.opt.zero_grad()
                 outputs, _ = self.lcmvae(im_batch, cap_batch, pretraining=True)
-                print(batch_i)
                 # target_batch = torch.tensor(
                 #     target_batch).reshape(-1, 224, 224, 3).type(torch.float)
-                print(outputs)
+                # print(outputs)
                 total_loss, rec_loss, kl_loss = self.lcmvae.loss(
                     im_batch, outputs, self.config.beta)
                 total_loss.backward()
                 self.opt.step()
-                print(batch_i)
                 total_losses.append(total_loss.cpu().detach())
                 rec_losses.append(rec_loss.cpu().detach())
                 kl_losses.append(kl_loss.cpu().detach())
@@ -47,7 +44,7 @@ class PreTrainer():
                     save_checkpoint(self.lcmvae.vae.encoder, name=self.name)
                     save_checkpoint(self.lcmvae.vae.decoder, name=self.name)
                     best_loss = new_loss
-                if train_it % 5 == 0:
+                if train_it % 10 == 0:
                     print(
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                     )

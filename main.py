@@ -33,19 +33,6 @@ def main():
 
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
-
-    # dog_url = 'data/coco/val2017/000000000139.jpg'
-    # cat_url = 'data/coco/val2017/000000000285.jpg'
-    
-    # dog_im = cv2.imread(dog_url)
-    # cat_im = cv2.imread(cat_url)
-    # dog_im = cv2.resize(dog_im, (224, 224))
-    # cat_im = cv2.resize(cat_im, (224, 224))
-    # images = [dog_im, cat_im]
-    # dog_cap = "smiling happy dog"
-    # cat_cap = "confused orange cat"
-    # captions = [dog_cap, cat_cap]
-    # data = [[images, captions]]
     
     # Construct Dataset
     coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
