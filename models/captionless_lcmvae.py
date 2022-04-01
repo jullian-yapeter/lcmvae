@@ -13,7 +13,7 @@ class CaptionlessLCMVAE(nn.Module):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         if self.config.is_mae:
-            self.img_encoder= VitMaeEncoder(mask_ratio=self.config.mask_ratio, device=self.device)
+            self.img_encoder = VitMaeEncoder(mask_ratio=self.config.mask_ratio, device=self.device)
         else:
             self.img_encoder = VitEncoder(device=self.device)
         self.vae = VAE(self.config.vae_params, device=self.device)
@@ -43,7 +43,7 @@ class CaptionlessLCMVAE(nn.Module):
         vae_outputs = self.vae.reconstruct(img_embedding)
         return vae_outputs, mask
 
-    def run(self, images, captions):
+    def run(self, images, captions=None):
         outputs, mask = self.reconstruct(images)
         return outputs["reconstruction"][0].cpu().detach().numpy() * 255, mask
 

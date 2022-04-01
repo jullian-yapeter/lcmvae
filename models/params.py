@@ -31,6 +31,24 @@ class VAE_PARAMS:
         {"in_dim": 1536, "out_dim": math.prod(im_dims)}
     ]
 
+class CONV_VAE_PARAMS:
+    checkpoint_file = "conv_vae"
+    embed_dim = 512
+    im_dims = [3, 224, 224]
+
+    encoder_params = LINEAR_NETWORK_PARAMS()
+    encoder_params.output_dim = embed_dim * 2
+    encoder_params.activation = nn.LeakyReLU()
+    encoder_params.linear_layer_params = [
+        {"in_dim": 1536, "out_dim": 1024},
+        {"in_dim": 1024, "out_dim": 512},
+        {"in_dim": 512, "out_dim": 512},
+        {"in_dim": 512, "out_dim": 512},
+        {"in_dim": 512, "out_dim": encoder_params.output_dim}
+    ]
+    ## TODO: Add decoder params for hidden units/channells
+
+
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
     is_mae = True
