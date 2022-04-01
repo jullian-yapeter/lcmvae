@@ -1,7 +1,5 @@
-from torch import nn
 import torch
-
-## Only tested on single image yet ##
+from torch import nn
 
 class PixelMask():
     def __init__(self, mask_ratio):
@@ -13,9 +11,8 @@ class PixelMask():
         imgs: (N, C, H, W)
         """
         p = torch.rand_like(imgs[:, 0, :, :])
-        masks = torch.where(p < self.mask_ratio, False, True)
+        masks = torch.where(p < self.mask_ratio, True, False)
         return imgs.masked_fill_(masks.unsqueeze(1), 0), masks
-
 
 
 class PatchMask():

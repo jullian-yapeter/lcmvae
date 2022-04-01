@@ -26,7 +26,7 @@ class CaptionlessLCMVAE(nn.Module):
             else:
                 img_embedding = self.img_encoder.forward(images)
         vae_outputs = self.vae(
-            torch.cat((img_embedding, torch.zeros_like(img_embedding)), dim=-1),
+            torch.cat((img_embedding, torch.zeros_like(img_embedding, device=self.device)), dim=-1),
             pretraining = pretraining)
         return vae_outputs, mask
 

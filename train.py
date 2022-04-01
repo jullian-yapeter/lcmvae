@@ -112,9 +112,6 @@ class Trainer():
 
 
 
-######################################################
-###################  NOT YET TESTED ##################
-######################################################
 class VAEPreTrainer():
     def __init__(self, model, config, mask_maker=None, experiment_name=None):
         self.config = config
