@@ -1,10 +1,10 @@
-mkdir -p data  # if not exsit, create a folder
-
 # COCO: trainval2017, val2017
 data_dir='data'
 dataset_dir='coco'
 
-# caption
+mkdir -p $data_dir  # if not exsit, create a folder
+
+# annotations
 wget http://images.cocodataset.org/annotations/annotations_trainval2017.zip
 unzip -o annotations_trainval2017.zip -d $data_dir/$dataset_dir/
 mv $data_dir/$dataset_dir/annotations/ $data_dir/$dataset_dir/ann_trainval2017/
