@@ -39,10 +39,7 @@ class Decoder(nn.Module):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.checkpoint_file = "decoder"
-        self.model = nn.Sequential(
-            LinearNetwork(decoder_params),
-            nn.Sigmoid()
-        ).to(self.device)
+        self.model = LinearNetwork(decoder_params).to(self.device)
 
     def forward(self, x):
         return self.model(x)
