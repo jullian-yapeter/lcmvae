@@ -18,12 +18,9 @@ class LinearNetwork(nn.Module):
             if i < len(self.config.linear_layer_params) - 1:
                 linear_layers.append(self.activation)
 
-        self.model = nn.Sequential(
-            *linear_layers
-        ).to(self.device)
+        self.model = nn.Sequential(*linear_layers).to(self.device)
 
     def forward(self, x):
-        x.to(self.device)
         out = self.model(x)
         return out
 

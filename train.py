@@ -116,15 +116,14 @@ class Trainer():
 ###################  NOT YET TESTED ##################
 ######################################################
 class GeneralTrainer():
-    def __init__(self, model, config, criterion, mask_maker=None, feat_extractor=None, experiment_name=None):
+    def __init__(self, model, config, criterion, mask_maker=None, experiment_name=None):
         self.config = config
         self.name = experiment_name
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
-        self.model = model.train()
-        self.feat_extractor = feat_extractor
+        self.model = model.to(self.device).train()
         self.mask_maker = mask_maker
-        self.criterion = criterion
+        self.criterion = criterion.to(self.device)
         self.opt = torch.optim.Adam(self.model.parameters(),
                                     lr=self.config.learning_rate)
 
@@ -140,15 +139,10 @@ class GeneralTrainer():
                 target_batch = img_batch
                 if self.mask_maker: 
                     img_batch, masks = self.mask_maker(img_batch)
-                if self.feat_extractor:
-                    img_batch = self.feat_extractor(img_batch)
-                print(img_batch.shape)
 
                 self.opt.zero_grad()
                 outputs, _ = self.model(img_batch, cap_batch)
-                loss = self.criterion(
-                    torch.tensor(target_batch, dtype=torch.float).reshape(-1, 3, 224, 224),
-                    outputs)
+                loss = self.criterion(target_batch, outputs)
                 loss.backward()
                 self.opt.step()
                 
