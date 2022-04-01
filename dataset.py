@@ -163,7 +163,7 @@ class MyCocoCaption(CocoDetection):
         target_transform: Optional[Callable] = None,
         transforms: Optional[Callable] = None,
     ) -> None:
-        super().__init__(root, transforms, transform, target_transform)
+        super().__init__(root, annFile, transforms, transform, target_transform)
         from pycocotools.coco import COCO
 
         self.coco = COCO(annFile)
@@ -196,7 +196,60 @@ class MyCocoCaption(CocoDetection):
 
     def _load_target(self, id: int) -> List[str]:
         return self._captions2str(id)
- 
+
+
+class MyCocoCaptionDetection(MyCocoCaption):
+    def __init__(
+        self,
+        from_pretrained: str,
+        root: str,
+        annFile: str,
+        detAnnFile: str,
+        superclasses: List[str],
+        transform: Optional[Callable] = None,
+        target_transform: Optional[Callable] = None,
+        transforms: Optional[Callable] = None,
+    ) -> None:
+        super().__init__(from_pretrained, root, annFile,
+                         transform, target_transform, transforms)
+        from pycocotools.coco import COCO
+        self.det = COCO(detAnnFile)
+        self.cat_ids = self.det.getCatIds(supNms=superclasses)
+        img_ids = []
+        for cat in self.cat_ids:
+            img_ids.extend(self.det.getImgIds(catIds=cat))
+        self.img_data = self.det.loadImgs(img_ids)
+        self.resizer = T.Resize((IMG_H, IMG_W))
+
+    def __len__(self) -> int:
+        return len(self.img_data)
+
+    def _segment_mask(self, id: int) -> torch.LongTensor:
+        ann_ids = self.det.getAnnIds(
+            imgIds=id,
+            catIds=self.cat_ids,
+            iscrowd=None
+        )
+        anns = self.det.loadAnns(ann_ids)
+        mask = np.max(np.stack([self.det.annToMask(ann) * ann["category_id"]
+                                for ann in anns]), axis=0)
+        mask = torch.LongTensor(mask).unsqueeze(0)
+        
+        return mask
+
+    def _load_target(self, id: int):
+        return (super()._captions2str(id), self._segment_mask(id))
+
+    def __getitem__(self, index: int) -> Tuple[Any, Any]:
+        id = self.img_data[index]['id']
+        image = self._load_image(id)
+        caption, mask = self._load_target(id)
+
+        if self.transforms is not None:
+            image, mask = self.transforms(image, mask)
+
+        return image, (caption, self.resizer(mask))
+
 
 if __name__ == "__main__":
     # coco_val2017

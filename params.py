@@ -20,7 +20,8 @@ class PRETRAIN_DATASET_PARAMS:
     # coco_val2017
     data_root = './data'
     dataType = 'val2017'
-    image_dir = f'{data_root}/coco/val2017/'
+    image_dir = f'{data_root}/coco/{dataType}/'
+    det_ann_file = f'{data_root}/coco/ann_trainval2017/instances_{dataType}.json'
     ann_file = f'{data_root}/coco/ann_trainval2017/captions_{dataType}.json'
     transform = None
     # [ ]: which from_pretrained?
