@@ -37,6 +37,10 @@ def main():
     coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
                                 annFile = PRETRAIN_DATASET_PARAMS.ann_file,
                                 from_pretrained = PRETRAIN_DATASET_PARAMS.from_pretrained)
+    
+    # image mean and std for reconstruction
+    image_mean = coco_val2017.feature_extractor.image_mean
+    image_std = coco_val2017.feature_extractor.image_std
 
     # # detection dataset: outputs: img, (caption, mask)
     # # cats = {1: 'person', 2: 'bicycle', 3: 'car',4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat'}
