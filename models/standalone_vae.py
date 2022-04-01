@@ -99,8 +99,6 @@ class Decoder(nn.Module):
     return self.net(self.map(x).reshape(-1, 512, 1, 1))
 
 
-
-# TODO: Need to be tested
 class StandaloneVAE(nn.Module):
     def __init__(self, config, device=None):
         super().__init__()
