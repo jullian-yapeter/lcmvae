@@ -15,15 +15,19 @@ class TEST_PARAMS:
     beta = 0
     
 class PRETRAIN_DATASET_PARAMS:
-    # MyCocoCaption
-    # coco_val2017
     data_root = './data'
-    dataType = 'val2017'
+    dataType = 'val2017'  # dataType: 'train2017' or 'val2017'
     image_dir = f'{data_root}/coco/{dataType}/'
     det_ann_file = f'{data_root}/coco/ann_trainval2017/instances_{dataType}.json'
     ann_file = f'{data_root}/coco/ann_trainval2017/captions_{dataType}.json'
     transform = None
+<<<<<<< HEAD
     # [ ]: which from_pretrained?
+=======
+    # NOTE: set proper from_pretrained for dataset
+    # VitEncoder: "google/vit-base-patch16-224-in21k"
+    # VitEncoder: 'facebook/vit-mae-base'
+>>>>>>> 4d32d50a6c7adde26b2e57d2050796c8d56a5f67
     from_pretrained = 'facebook/vit-mae-base'
     
     # DataLoader

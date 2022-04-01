@@ -37,7 +37,11 @@ def main():
                                 annFile = PRETRAIN_DATASET_PARAMS.ann_file,
                                 from_pretrained = PRETRAIN_DATASET_PARAMS.from_pretrained)
     
+<<<<<<< HEAD
     # mean and std for reconstruction
+=======
+    # image mean and std for reconstruction
+>>>>>>> 4d32d50a6c7adde26b2e57d2050796c8d56a5f67
     image_mean = coco_val2017.feature_extractor.image_mean
     image_std = coco_val2017.feature_extractor.image_std
 

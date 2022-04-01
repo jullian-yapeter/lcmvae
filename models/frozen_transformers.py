@@ -26,10 +26,9 @@ class VitEncoder():
     def __init__(self, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        # FIXME: feature_extractor was created during building a dataset in PreTrainer 
+        # NOTE: feature_extractor was created during building a dataset in PreTrainer 
         # self.feature_extractor = ViTFeatureExtractor.from_pretrained(
         #     "google/vit-base-patch16-224-in21k", do_resize=True)
-        # FIXME: dataset.MyCocoCaption is using 'google/vit-base-patch16-224'
         self.model = ViTModel.from_pretrained(
             "google/vit-base-patch16-224-in21k").to(self.device)
         self.hidden_size = self.model.config.hidden_size
@@ -47,7 +46,7 @@ class VitMaeEncoder():
     def __init__(self, mask_ratio=0.75, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        # FIXME: feature_extractor was created during building a dataset in PreTrainer 
+        # NOTE: feature_extractor was created during building a dataset in PreTrainer 
         # self.feature_extractor = AutoFeatureExtractor.from_pretrained(
         #     "facebook/vit-mae-base")
         self.model = ViTMAEModel.from_pretrained(
@@ -55,7 +54,7 @@ class VitMaeEncoder():
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):
-        # FIXME: feature_extractor was created during building a dataset in PreTrainer 
+        # NOTE: feature_extractor was created during building a dataset in PreTrainer 
         # image_features = self.feature_extractor(
         #     images, return_tensors="pt").to(self.device)
         with torch.no_grad():
