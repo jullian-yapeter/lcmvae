@@ -1,8 +1,7 @@
 from models.basic_models.linear import Encoder, Decoder
-from models.lcmvae import LCMVAE #, LCMVAEDownstream
+from models.lcmvae import LCMVAE
 from models.heads import ReconstructionHead
 from models.params import LCMVAE_PARAMS as LCMVAEP
-# from models.params import LCMVAED_PARAMS as LCMVAEDP
 from train import PreTrainer, Trainer
 from test import PreTester, Tester
 from params import PRETRAIN_PARAMS as PTP
@@ -20,7 +19,7 @@ from PIL import Image
 import numpy as np
 
 from torch.utils.data import DataLoader
-from dataset import MyCocoCaption
+from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 
 def main():
@@ -38,6 +37,14 @@ def main():
     coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
                                 annFile = PRETRAIN_DATASET_PARAMS.ann_file,
                                 from_pretrained = PRETRAIN_DATASET_PARAMS.from_pretrained)
+
+    # # detection dataset: outputs: img, (caption, mask)
+    # # cats = {1: 'person', 2: 'bicycle', 3: 'car',4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat'}
+    # coco_val2017 = MyCocoCaptionDetection(root=PRETRAIN_DATASET_PARAMS.image_dir,
+    #                               annFile=PRETRAIN_DATASET_PARAMS.ann_file,
+    #                               detAnnFile=PRETRAIN_DATASET_PARAMS.det_ann_file,
+    #                               superclasses=["person", "vehicle"],
+    #                               from_pretrained=PRETRAIN_DATASET_PARAMS.from_pretrained)
 
     # Check the info of dataset, you can ignore this part
     print('-'*40)

@@ -7,6 +7,7 @@ __pycache__/
 
 # dev_lei
 /data
+/demo
 download.py
 *.zip*
 features.md
