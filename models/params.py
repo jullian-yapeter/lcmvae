@@ -1,3 +1,4 @@
+from json import decoder
 from models.basic_models.params import LINEAR_NETWORK_PARAMS
 
 import math
@@ -30,9 +31,25 @@ class VAE_PARAMS:
         {"in_dim": 1536, "out_dim": math.prod(im_dims)}
     ]
 
-
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
     is_mae = True
     mask_ratio = 0.75
     vae_params = VAE_PARAMS()
+
+
+
+class CAPTIONLESS_LCMVAE_PARAMS:
+    checkpoint_file = "captionless_lcmvae"
+    embed_dim = 768
+    im_dims = [3, 224, 224]
+
+
+class STANDALONE_VAE_PARAMS:
+    checkpoint_file = "standalone_vae"
+    embed_dim = 768
+    im_dims = [3, 224, 224]
+
+
+
+    
