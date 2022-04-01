@@ -9,7 +9,7 @@ from params import PRETEST_PARAMS as PTEP
 from params import TRAIN_PARAMS as TP
 from params import TEST_PARAMS as TEP
 from utils import load_checkpoint
-from params import PRETRAIN_DATASET_PARAMS
+from params import PRETRAIN_DATASET_PARAMS, MODE_PARAMS
 
 import cv2
 import torch
@@ -23,13 +23,12 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 
 def main():
-    experiment_name = "no_mask"
-    pretrain = True
-    pretest = False
-    train = False
-    test = False
-
-
+    experiment_name = MODE_PARAMS.experiment_name
+    pretrain = MODE_PARAMS.pretrain
+    pretest = MODE_PARAMS.pretest
+    train = MODE_PARAMS.train
+    test = MODE_PARAMS.test
+    
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
     
@@ -37,6 +36,10 @@ def main():
     coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
                                 annFile = PRETRAIN_DATASET_PARAMS.ann_file,
                                 from_pretrained = PRETRAIN_DATASET_PARAMS.from_pretrained)
+    
+    # mean and std for reconstruction
+    image_mean = coco_val2017.feature_extractor.image_mean
+    image_std = coco_val2017.feature_extractor.image_std
 
     # # detection dataset: outputs: img, (caption, mask)
     # # cats = {1: 'person', 2: 'bicycle', 3: 'car',4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat'}
@@ -91,10 +94,12 @@ def main():
         print(mask)
         cv2.imwrite(f"output/{experiment_name}.jpg", reconstruction)
 
+    
+    im_dims = (3,224,224)
     if train:
         test_data = [[dog_im, dog_cap, dog_im], [cat_im, cat_cap, cat_im]]
         head = ReconstructionHead(
-            LCMVAEP.vae_params.decoder_params, im_dims=(224, 224, 3))
+            LCMVAEP.vae_params.decoder_params, im_dims=im_dims)
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         load_checkpoint(encoder, name=experiment_name+"_pretrain")
         lcmvae.vae.encoder = encoder
@@ -106,7 +111,7 @@ def main():
     if test:
         test_data = [[dog_im, dog_cap, dog_im], [cat_im, cat_cap, cat_im]]
         head = ReconstructionHead(
-            LCMVAEP.vae_params.decoder_params, im_dims=(224, 224, 3))
+            LCMVAEP.vae_params.decoder_params, im_dims=im_dims)
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         load_checkpoint(head, name=experiment_name+"_train")
         load_checkpoint(encoder, name=experiment_name+"_train")
