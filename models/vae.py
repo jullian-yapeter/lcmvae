@@ -21,24 +21,23 @@ class VAE(nn.Module):
             "log_sigma": torch.zeros(self.config.embed_dim, device=self.device)
         }
 
-    def forward(self, x, pretraining=True):
+    def forward(self, x, use_epsilon=True):
         encoder_out = self.encoder(x)
         mean = encoder_out[:, :self.config.embed_dim]
         log_sigma = encoder_out[:, self.config.embed_dim:]
-        reconstruction = None
-        if pretraining:
+        z = mean
+        if use_epsilon:
             epsilon = torch.randn(
                 x.shape[0], self.config.embed_dim, device=self.device)
             z = mean + torch.exp(log_sigma) * epsilon
-            decoder_out = self.decoder(z)
-            reconstruction = decoder_out.view(-1, *self.config.im_dims)
+        decoder_out = self.decoder(z)
         return {
-            "reconstruction": reconstruction,
+            "reconstruction": decoder_out,
             "mean": mean,
             "log_sigma": log_sigma
         }
 
-    def loss(self, target_images, vae_outputs, beta):
+    def loss(self, vae_outputs, target_images, beta):
         reconstruction_images = vae_outputs["reconstruction"]
         vae_mean = vae_outputs["mean"]
         vae_log_sigma = vae_outputs["log_sigma"]
@@ -57,7 +56,7 @@ class VAE(nn.Module):
         log_sigma = encoder_out[:, self.config.embed_dim:]
         decoder_out = self.decoder(mean)
         return {
-            "reconstruction": decoder_out.view(-1, *self.config.im_dims),
+            "reconstruction": decoder_out,
             "mean": mean,
             "log_sigma": log_sigma
         }
