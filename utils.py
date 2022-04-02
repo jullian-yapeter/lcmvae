@@ -41,9 +41,11 @@ def log_losses(losses, name):
     for loss_name, loss_list in losses.items():
         loss_log["means"][loss_name] = mean(loss_list)
 
+
     loss_log["variances"] = {}
     for loss_name, loss_list in losses.items():
-        loss_log["variances"][loss_name] = variance(loss_list)
+        if len(loss_list) > 1:
+            loss_log["variances"][loss_name] = variance(loss_list)
 
     with open(f"output/{name}.json", "w") as outfile:
         json.dump(loss_log, outfile)
@@ -73,3 +75,6 @@ def rand_split(dataset, train_ratio=0.7, seed=None):
     
     return train_dataset, test_dataset
     
+def denormalize_torch_to_cv2(im, mean, std):
+    im = im.permute(1, 2, 0) * std + mean
+    return torch.clip(im * 255, 0, 255).int().detach().numpy()

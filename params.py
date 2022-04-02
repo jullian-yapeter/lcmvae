@@ -1,10 +1,10 @@
 class PRETRAIN_PARAMS:
-    epochs = 2
+    epochs = 100
     learning_rate = 1e-4
     beta = 0
 
 class TRAIN_PARAMS:
-    epochs = 2
+    epochs = 300
     learning_rate = 1e-4
     beta = 0
 

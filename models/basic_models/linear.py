@@ -36,7 +36,8 @@ class Decoder(nn.Module):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.checkpoint_file = "decoder"
-        self.model = LinearNetwork(decoder_params).to(self.device)
+        self.im_dims = decoder_params.im_dims
+        self.model = LinearNetwork(decoder_params.linear_params).to(self.device)
 
     def forward(self, x):
-        return self.model(x)
+        return self.model(x).view(-1, *self.im_dims)
