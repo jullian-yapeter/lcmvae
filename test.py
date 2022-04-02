@@ -26,7 +26,7 @@ class Tester():
             # create a batch with 2 images for testing code -> (2, 224, 224, 3)
             # target_batch = np.array(im_batch)
             if self.downstream_criterion:
-                target = seg_batch.clone().detach().squeeze()
+                target = seg_batch.clone().detach().squeeze(dim=1)
             else:
                 target = im_batch.clone().detach()
             with torch.no_grad():
