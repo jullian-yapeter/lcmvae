@@ -1,11 +1,11 @@
 from utils import has_internet
 class PRETRAIN_PARAMS:
-    epochs = 100
+    epochs = 5
     learning_rate = 1e-4
     beta = 0
 
 class TRAIN_PARAMS:
-    epochs = 300
+    epochs = 5
     learning_rate = 1e-4
     beta = 0
 
