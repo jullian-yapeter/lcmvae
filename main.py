@@ -25,7 +25,7 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 
 def main():
-    experiment_name = "test_run"
+    experiment_name = "sample_run"
     pretrain = True
     pretest = False
     train = True
