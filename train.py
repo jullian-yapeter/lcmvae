@@ -30,6 +30,7 @@ class Trainer():
             for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}"):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
+                im_batch = im_batch.to(self.device)
                 if self.downstream_criterion:
                     target = seg_batch.clone().detach().squeeze(dim=1)
                 else:
