@@ -65,10 +65,10 @@ class VitMaeEncoder():
 
 
 class ImageCaptionEncoder():
-    def __init__(self, is_mae=True, mask_ratio=0.75, device=None):
+    def __init__(self, is_mae=True, mask_ratio=0.75, no_caption=False, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        self.bert = BertEncoder(device=self.device)
+        self.bert = None if no_caption else BertEncoder(device=self.device)
         self.is_mae = is_mae
         if is_mae:
             self.vit = VitMaeEncoder(mask_ratio=mask_ratio, device=self.device)
@@ -81,7 +81,7 @@ class ImageCaptionEncoder():
             image_encodings, mask = self.vit.forward(images)
         else:
             image_encodings = self.vit.forward(images)
-        caption_encodings = self.bert.forward(captions)
+        caption_encodings = self.bert.forward(captions) if self.bert else torch.zeros(image_encodings.shape)
         return torch.cat((image_encodings, caption_encodings), dim=-1), mask
 
 
