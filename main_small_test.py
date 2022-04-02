@@ -2,7 +2,6 @@ from models.basic_models.linear import Encoder, Decoder
 from models.lcmvae import LCMVAE
 from models.heads import ConvDecoder512
 
-from models.params import CONV_DECODER_512_PARAMS as CD512P
 from train import Trainer
 from test import Tester
 from params import PRETRAIN_PARAMS as PTP
@@ -23,6 +22,14 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 import math
 from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 
+class PTP:
+    epochs = 1
+    learning_rate = 1e-4
+    beta = 0
+class TP:
+    epochs = 1
+    learning_rate = 1e-4
+    beta = 0
 class SMALL_VAE_PARAMS:
     checkpoint_file = "small_vae"
     embed_dim = 256
@@ -106,7 +113,7 @@ def main():
     # Build Dataloader for pretrain
     data_loader = DataLoader(dataset = coco_val2017, 
                              batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
-                            #  batch_size=2,
+                             # batch_size=2,
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
