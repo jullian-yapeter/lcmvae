@@ -35,7 +35,7 @@ class ConvDecoder512(nn.Module):
     self.out_channels = config.out_channels
 
     self.map = nn.Linear(self.config.embed_dim, 512, bias=True).to(
-        device)   # for initial Linear layer
+        self.device)   # for initial Linear layer
     self.net = nn.Sequential(
         nn.BatchNorm2d(512),
         nn.LeakyReLU(),
@@ -58,7 +58,7 @@ class ConvDecoder512(nn.Module):
         nn.ConvTranspose2d(
             in_channels=32, out_channels=self.out_channels, kernel_size=16,
             stride=4, padding=0, bias=True)
-    ).to(device)
+    ).to(self.device)
 
   def forward(self, x):
     return self.net(self.map(x).reshape(-1, 512, 1, 1))
