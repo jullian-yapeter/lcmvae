@@ -58,7 +58,7 @@ class LCMVAEP:
     is_mae = True
     mask_ratio = 0.75
     vae_params = SMALL_VAE_PARAMS()
-    no_caption = False
+    no_caption = True
     checkpoint_file = "lcmvae_capless" if no_caption else "lcmvae"  
     checkpoint_file = 'small_' + checkpoint_file
     

@@ -62,7 +62,7 @@ experiment_name = 'alone_VAE_patchMask'  + today.strftime("-%Y-%m-%d")
 print('-'*40); print("Experiment", experiment_name); print('-'*40)
 
 class PRETRAIN_PARAMS:
-    epochs = 10
+    epochs = 6
     learning_rate = 1e-4
     beta = 1e-7
 
