@@ -23,9 +23,11 @@ import numpy as np
 from torch.utils.data import DataLoader
 from dataset import MyCocoCaption, MyCocoCaptionDetection
 
-
+from datetime import date
+    
 def main():
-    experiment_name = "sample_run"
+    today = date.today()
+    experiment_name = "sample_run" + today.strftime("-%Y-%m-%d") 
     pretrain = True
     pretest = False
     train = True
