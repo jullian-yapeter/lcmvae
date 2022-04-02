@@ -32,6 +32,7 @@ class VAE_PARAMS:
         {"in_dim": 1536, "out_dim": math.prod(im_dims)}
     ]
 
+
 class CONV_VAE_PARAMS:
     checkpoint_file = "conv_vae"
     embed_dim = 512
@@ -51,12 +52,12 @@ class CONV_VAE_PARAMS:
 
 
 class LCMVAE_PARAMS:
-    checkpoint_file = "lcmvae"
     is_mae = True
     mask_ratio = 0.75
     vae_params = VAE_PARAMS()
     no_caption = False
-
+    checkpoint_file = "lcmvae_capless"  if no_caption else "lcmvae"  
+    checkpoint_file = checkpoint_file
 
 
 class CAPTIONLESS_LCMVAE_PARAMS:
@@ -75,3 +76,5 @@ class CONV_DECODER_512_PARAMS:
     checkpoint_file = "conv_decoder_512"
     embed_dim = 768
     out_channels = 10
+
+

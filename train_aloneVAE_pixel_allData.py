@@ -62,13 +62,13 @@ experiment_name = 'alone_VAE_pixelMask'  + today.strftime("-%Y-%m-%d")
 print('-'*40); print("Experiment", experiment_name); print('-'*40)
 
 class PRETRAIN_PARAMS:
-    epochs = 3
+    epochs = 10
     learning_rate = 1e-4
     beta = 1e-7
 
 
 class STANDALONE_VAE_PARAMS:
-    checkpoint_file = experiment_name
+    checkpoint_file = 'standalone_vae'
     embed_dim = 768
     im_dims = [3, 224, 224]
 

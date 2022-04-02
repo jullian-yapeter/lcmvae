@@ -2,8 +2,6 @@ from models.basic_models.linear import Encoder, Decoder
 from models.lcmvae import LCMVAE
 from models.heads import ConvDecoder512
 
-from models.params import SMALL_LCMVAE_PARAMS as LCMVAEP # <<----
-
 from models.params import CONV_DECODER_512_PARAMS as CD512P
 from train import Trainer
 from test import Tester
@@ -21,6 +19,45 @@ import matplotlib.pyplot as plt
 
 from torch.utils.data import DataLoader
 from dataset import MyCocoCaption, MyCocoCaptionDetection
+
+import math
+from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
+class SMALL_VAE_PARAMS:
+    checkpoint_file = "small_vae"
+    embed_dim = 256
+    im_dims = (3, 224, 224)
+
+    encoder_params = LINEAR_NETWORK_PARAMS()
+    encoder_params.output_dim = embed_dim * 2
+    encoder_params.activation = nn.LeakyReLU()
+    encoder_params.linear_layer_params = [
+        {"in_dim": 1536, "out_dim": 768},
+        {"in_dim": 768, "out_dim": 512},
+        {"in_dim": 512, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 256},
+        {"in_dim": 256, "out_dim": encoder_params.output_dim}
+    ]
+
+    decoder_params = DECODER_PARAMS()
+    decoder_params.im_dims = (3, 224, 224)
+    decoder_params.linear_params.output_dim = embed_dim
+    decoder_params.linear_params.activation = nn.LeakyReLU()
+    decoder_params.linear_params.linear_layer_params = [
+        {"in_dim": embed_dim, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 512},
+        {"in_dim": 512, "out_dim": math.prod(im_dims)}
+    ]
+
+
+class LCMVAEP:
+    is_mae = True
+    mask_ratio = 0.75
+    vae_params = SMALL_VAE_PARAMS()
+    no_caption = False
+    checkpoint_file = "lcmvae_capless" if no_caption else "lcmvae"  
+    checkpoint_file = 'small_' + checkpoint_file
 
 from datetime import date
 today = date.today()

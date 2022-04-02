@@ -68,7 +68,7 @@ class PRETRAIN_PARAMS:
 
 
 class STANDALONE_VAE_PARAMS:
-    checkpoint_file = experiment_name
+    checkpoint_file = 'standalone_VAE'
     embed_dim = 768
     im_dims = [3, 224, 224]
 
