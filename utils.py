@@ -4,7 +4,7 @@ import json
 from statistics import mean, variance
 from torch.utils.data import random_split
 import os
-
+import http.client as httplib
 
 def save_checkpoint(model, name=None):
     # automatically create saved_models folder
@@ -18,6 +18,7 @@ def save_checkpoint(model, name=None):
         torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}_{name}")
     else:
         torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}")
+
 
 def load_checkpoint(model, checkpoint_file=None, name=None):
     if checkpoint_file:
@@ -47,6 +48,17 @@ def log_losses(losses, name):
 
     with open(f"output/{name}.json", "w") as outfile:
         json.dump(loss_log, outfile)
+
+
+def has_internet():
+    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+    try:
+        conn.request("HEAD", "/")
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
 
 
 ###################

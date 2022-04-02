@@ -1,16 +1,19 @@
-from transformers import AutoFeatureExtractor, BertTokenizer, BertModel, ViTFeatureExtractor, ViTModel, ViTMAEModel
+from transformers import BertTokenizer, BertModel, ViTModel, ViTMAEModel
 import torch
 import cv2
-
+from utils import has_internet
 
 class BertEncoder():
     def __init__(self, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.pretrained_path = 'bert-base-uncased' \
+            if has_internet() else './saved_models/BERT'
+
         self.tokenizer = BertTokenizer.from_pretrained(
-            'bert-base-uncased', do_lower_case=True)
+            self.pretrained_path, do_lower_case=True)
         self.model = BertModel.from_pretrained(
-            "bert-base-uncased").to(self.device)
+            self.pretrained_path).to(self.device)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, sentences):
@@ -26,11 +29,12 @@ class VitEncoder():
     def __init__(self, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.pretrained_path = 'google/vit-base-patch16-224-in21k' \
+            if has_internet() else './saved_models/ViT'
         # NOTE: feature_extractor was created during building a dataset in PreTrainer 
         # self.feature_extractor = ViTFeatureExtractor.from_pretrained(
         #     "google/vit-base-patch16-224-in21k", do_resize=True)
-        self.model = ViTModel.from_pretrained(
-            "google/vit-base-patch16-224-in21k").to(self.device)
+        self.model = ViTModel.from_pretrained(self.pretrained_path).to(device)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):
@@ -46,11 +50,13 @@ class VitMaeEncoder():
     def __init__(self, mask_ratio=0.75, device=None):
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
+        self.pretrained_path = 'facebook/vit-mae-base' \
+            if has_internet() else './saved_models/ViTMAE'
         # NOTE: feature_extractor was created during building a dataset in PreTrainer 
         # self.feature_extractor = AutoFeatureExtractor.from_pretrained(
         #     "facebook/vit-mae-base")
         self.model = ViTMAEModel.from_pretrained(
-            "facebook/vit-mae-base", mask_ratio=mask_ratio).to(self.device)
+            self.pretrained_path, mask_ratio=mask_ratio).to(self.device)
         self.hidden_size = self.model.config.hidden_size
 
     def forward(self, images):

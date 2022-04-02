@@ -1,3 +1,4 @@
+from utils import has_internet
 class PRETRAIN_PARAMS:
     epochs = 2
     learning_rate = 1e-4
@@ -25,7 +26,8 @@ class PRETRAIN_DATASET_PARAMS:
     # NOTE: set proper from_pretrained for dataset
     # VitEncoder: "google/vit-base-patch16-224-in21k"
     # VitEncoder: 'facebook/vit-mae-base'
-    from_pretrained = 'facebook/vit-mae-base'
+    from_pretrained = 'facebook/vit-mae-base' \
+        if has_internet() else './saved_models/ViTMAE'
     
     # DataLoader
     batch_size = 64
