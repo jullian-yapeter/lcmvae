@@ -52,12 +52,12 @@ class CONV_VAE_PARAMS:
 
 
 class LCMVAE_PARAMS:
+    checkpoint_file = "lcmvae"
     is_mae = True
     mask_ratio = 0.75
     vae_params = VAE_PARAMS()
     no_caption = False
-    checkpoint_file = "lcmvae_capless"  if no_caption else "lcmvae"  
-    checkpoint_file = checkpoint_file
+    use_epsilon = True
 
 
 class CAPTIONLESS_LCMVAE_PARAMS:

@@ -16,7 +16,8 @@ class LCMVAE(nn.Module):
         self.im_cap_encoder = ImageCaptionEncoder(is_mae=self.config.is_mae, mask_ratio=self.config.mask_ratio, no_caption=self.config.no_caption, device=device)
         self.vae = VAE(self.config.vae_params, device=device)
         
-    def forward(self, images, captions, use_epsilon=True):
+    def forward(self, images, captions):
+        use_epsilon = self.config.use_epsilon
         mask = None
         with torch.no_grad():
             if self.config.is_mae:

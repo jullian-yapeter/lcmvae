@@ -63,8 +63,8 @@ class LCMVAEP:
     is_mae = True
     mask_ratio = 0
     vae_params = SMALL_VAE_PARAMS()
-    no_caption = True
-    use_epsilon = True
+    no_caption = False
+    use_epsilon = False
 
 def main():
     today = date.today()

@@ -24,10 +24,10 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 import math
 from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 from datetime import date
-import os, inspect
+import os, sys, inspect
 
 class SMALL_VAE_PARAMS:
-    checkpoint_file = "small_vae_capless"
+    checkpoint_file = "small_vae"
     embed_dim = 256
     im_dims = (3, 224, 224)
 
@@ -59,17 +59,16 @@ class CD512P:
     out_channels = 10
 
 class LCMVAEP:
+    checkpoint_file = "lcmvae"
     is_mae = True
     mask_ratio = 0.75
     vae_params = SMALL_VAE_PARAMS()
     no_caption = True
-    checkpoint_file = "lcmvae_capless" if no_caption else "lcmvae"  
-    checkpoint_file = 'small_' + checkpoint_file
-
+    use_epsilon = True
 
 def main():
     today = date.today()
-    experiment_name = "small" + today.strftime("-%Y-%m-%d") 
+    experiment_name = sys.argv[0][5:-3] + today.strftime("-%Y-%m-%d") 
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
 
     pretrain = True
