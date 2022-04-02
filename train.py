@@ -67,7 +67,7 @@ class Trainer():
         print("Done!")
 
         # log the loss training curves
-        fig = plt.figure(figsize=(15, 5))
+        plt.figure(figsize=(15, 5))
         if self.downstream_criterion:
             ax1 = plt.subplot(111)
             ax1.plot(total_losses)
@@ -82,7 +82,7 @@ class Trainer():
             ax3 = plt.subplot(133)
             ax3.plot(kl_losses)
             ax3.title.set_text("KL Loss")
-        plt.show()
+        plt.savefig(f"output/{self.name}_plot.jpg")
 
 
 # class Trainer():
