@@ -26,10 +26,10 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 def main():
     experiment_name = "sample_run"
-    pretrain = False
+    pretrain = True
     pretest = False
-    train = False
-    test = True
+    train = True
+    test = False
 
 
     device = torch.device(
