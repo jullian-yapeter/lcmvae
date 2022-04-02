@@ -54,6 +54,7 @@ class LCMVAE_PARAMS:
     is_mae = True
     mask_ratio = 0.75
     vae_params = VAE_PARAMS()
+    no_caption = False
 
 
 
