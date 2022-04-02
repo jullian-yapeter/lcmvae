@@ -16,6 +16,7 @@ import cv2
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PIL import Image
 import numpy as np
@@ -64,8 +65,8 @@ def main():
     
     # Build Dataloader for pretrain
     data_loader = DataLoader(dataset = coco_val2017, 
-                             batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
-                            #  batch_size=2,
+                            #  batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
+                             batch_size=2,
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
@@ -93,18 +94,20 @@ def main():
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
 
-        tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
-        tester.run(data=data_loader)
+        # tester = Tester(
+        #     lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
+        # tester.run(data=data_loader)
 
-        im, (cap, _) = coco_val2017[0]
-        target = denormalize_torch_to_cv2(im, image_mean, image_std)
-        cv2.imwrite(f"output/{experiment_name}_target.jpg", target)
-        reconstruction, mask = lcmvae.run(im[None], [cap])
-        print(mask)
-        print(reconstruction.shape)
-        prediction = denormalize_torch_to_cv2(reconstruction, image_mean, image_std)
-        cv2.imwrite(f"output/{experiment_name}.jpg", prediction)
+        for i in range(10):
+            im, (cap, _) = coco_val2017[i]
+            target = denormalize_torch_to_cv2(im, image_mean, image_std)
+            reconstruction, mask = lcmvae.run(im[None], [cap])
+            prediction = denormalize_torch_to_cv2(
+                reconstruction, image_mean, image_std)
+            result = np.concatenate((target, prediction), axis=1)
+            # cv2.imwrite(f"output/{experiment_name}_target_{i}.jpg", target)
+            # cv2.imwrite(f"output/{experiment_name}_pred_{i}.jpg", prediction)
+            cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
 
     if train:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
