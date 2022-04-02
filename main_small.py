@@ -1,3 +1,4 @@
+from numpy import save
 from models.basic_models.linear import Encoder, Decoder
 from models.lcmvae import LCMVAE
 from models.heads import ConvDecoder512
@@ -22,6 +23,8 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 import math
 from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
+from datetime import date
+import os, inspect
 
 class SMALL_VAE_PARAMS:
     checkpoint_file = "small_vae"
@@ -54,6 +57,7 @@ class CD512P:
     checkpoint_file = "conv_decoder_512"
     embed_dim = 256
     out_channels = 10
+
 class LCMVAEP:
     is_mae = True
     mask_ratio = 0.75
@@ -62,12 +66,11 @@ class LCMVAEP:
     checkpoint_file = "lcmvae_capless" if no_caption else "lcmvae"  
     checkpoint_file = 'small_' + checkpoint_file
 
-from datetime import date
 
 def main():
     today = date.today()
-    experiment_name = "testing" #+ today.strftime("-%Y-%m-%d") 
-    print('-'*40); print("Experiment", experiment_name); print('-'*40)
+    experiment_name = "small" + today.strftime("-%Y-%m-%d") 
+    print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
 
     pretrain = True
     pretest = False
@@ -78,6 +81,16 @@ def main():
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
     
+    save_dir = f"./saved_models/{experiment_name}"
+    if not os.path.exists(save_dir): os.makedirs(save_dir)
+    with open(f"{save_dir}/PARAMS_{experiment_name}.txt", 'w') as f:
+        f.write(f"Experiment: {experiment_name}\n")
+        f.write(f"GPU Type: {torch.cuda.get_device_name()}\n\n")
+        lines = map(inspect.getsource, [
+            PTP, PTEP, TP, TEP, SMALL_VAE_PARAMS, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
+        f.write('\n\n'.join(lines))
+
+
     # # Construct Dataset
     # coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
     #                             annFile = PRETRAIN_DATASET_PARAMS.ann_file,
@@ -140,12 +153,12 @@ def main():
 
         im, (cap, _) = coco_val2017[0]
         target = denormalize_torch_to_cv2(im, image_mean, image_std)
-        cv2.imwrite(f"output/{experiment_name}_target.jpg", target)
+        cv2.imwrite(f"{save_dir}/{experiment_name}_target.jpg", target)
         reconstruction, mask = lcmvae.run(im[None], [cap])
         print(mask)
         print(reconstruction.shape)
         prediction = denormalize_torch_to_cv2(reconstruction, image_mean, image_std)
-        cv2.imwrite(f"output/{experiment_name}.jpg", prediction)
+        cv2.imwrite(f"{save_dir}/{experiment_name}.jpg", prediction)
 
     if train:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
@@ -184,7 +197,7 @@ def main():
         plt.imshow(seg.squeeze(), vmin=0, vmax=9)
         plt.subplot(122)
         plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
-        plt.savefig(f"output/{experiment_name}_segmentation.jpg")
+        plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
 
         
 

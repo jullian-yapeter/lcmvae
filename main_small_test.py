@@ -4,9 +4,13 @@ from models.heads import ConvDecoder512
 
 from train import Trainer
 from test import Tester
-from params import PRETRAIN_PARAMS as PTP
+
+###############################################################
+from params import PRETRAIN_PARAMS_b as PTP
+from params import TRAIN_PARAMS_b as TP
+###############################################################
+
 from params import PRETEST_PARAMS as PTEP
-from params import TRAIN_PARAMS as TP
 from params import TEST_PARAMS as TEP
 from utils import load_checkpoint, denormalize_torch_to_cv2
 from params import PRETRAIN_DATASET_PARAMS
@@ -21,6 +25,8 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 import math
 from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
+from datetime import date
+import inspect
 
 class PTP:
     epochs = 1
@@ -61,6 +67,7 @@ class CD512P:
     checkpoint_file = "conv_decoder_512"
     embed_dim = 256
     out_channels = 10
+
 class LCMVAEP:
     is_mae = True
     mask_ratio = 0.75
@@ -69,7 +76,6 @@ class LCMVAEP:
     checkpoint_file = "lcmvae_capless" if no_caption else "lcmvae"  
     checkpoint_file = 'small_' + checkpoint_file
 
-from datetime import date
 
 def main():
     today = date.today()
@@ -84,7 +90,14 @@ def main():
 
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
-    
+     
+    with open(f'./output/PARAMS_{experiment_name}.txt', 'w') as f:
+        f.write(f"Experiment: {experiment_name}\n")
+        f.write(f"GPU Type: {torch.cuda.get_device_name()}\n\n")
+        lines = map(inspect.getsource, [
+            PTP, PTEP, TP, TEP, SMALL_VAE_PARAMS, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
+        f.write('\n\n'.join(lines))
+
     # # Construct Dataset
     # coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
     #                             annFile = PRETRAIN_DATASET_PARAMS.ann_file,

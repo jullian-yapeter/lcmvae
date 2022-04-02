@@ -4,7 +4,7 @@ from torch.utils.data import DataLoader
 from dataset import MyCocoCaption
 from utils import has_internet
 from datetime import date
-
+import inspect
 today = date.today()
 
 class PRETRAIN_DATASET_PARAMS:
@@ -17,7 +17,7 @@ class PRETRAIN_DATASET_PARAMS:
     from_pretrained = 'facebook/vit-mae-base' \
         if has_internet() else './saved_models/ViTMAE'
     batch_size = 64
-    shuffle = False
+    shuffle = True
     num_workers = 0
     
 # Construct Dataset
@@ -38,7 +38,7 @@ first_img, first_cap = coco_val2017[0]
 print(f'Image shape: {first_img.size()}')
 
 print('-'*40)
-print("Has GPU? ", torch.cuda.is_available(), 'Type: ', torch.cuda.get_device_name(0))
+print("Has GPU? ", torch.cuda.is_available(), '--  Type: ', torch.cuda.get_device_name(0))
 print('-'*40)
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -58,23 +58,32 @@ from train import VAEPreTrainer
 from models.standalone_vae import StandaloneVAE
 from masks import PixelMask, PatchMask
 
-experiment_name = 'alone_VAE_pixelMask'  + today.strftime("-%Y-%m-%d") 
+experiment_name = 'alone_VAE_patchMask'  + today.strftime("-%Y-%m-%d") 
 print('-'*40); print("Experiment", experiment_name); print('-'*40)
 
-class PRETRAIN_PARAMS:
+class PTP:
     epochs = 6
     learning_rate = 1e-4
     beta = 1e-7
 
 
 class STANDALONE_VAE_PARAMS:
-    checkpoint_file = 'standalone_vae'
+    checkpoint_file = 'vae'
     embed_dim = 768
     im_dims = [3, 224, 224]
 
 
+with open(f'./output/PARAMS_{experiment_name}.txt', 'w') as f:
+    f.write(f"Experiment: {experiment_name}\n")
+    f.write(f"GPU Type: {torch.cuda.get_device_name()}\n\n")
+    lines = map(inspect.getsource, [
+        PTP, STANDALONE_VAE_PARAMS, LCMVAEP, PRETRAIN_DATASET_PARAMS])
+    f.write('\n\n'.join(lines))
+
+
 model = StandaloneVAE(STANDALONE_VAE_PARAMS, device=device)
 pretrainer = VAEPreTrainer(
-    model, PRETRAIN_PARAMS, mask_maker=PixelMask(0.2),
+    model, PTP, mask_maker=PatchMask(0.2, 4),
     experiment_name=experiment_name)
+
 pretrainer.run(data=data_loader)
