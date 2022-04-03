@@ -18,7 +18,7 @@ class TEST_PARAMS:
     
 class PRETRAIN_DATASET_PARAMS:
     data_root = './data'
-    dataType = 'val2017'  # dataType: 'train2017' or 'val2017'
+    dataType = 'train2017'  # dataType: 'train2017' or 'val2017'
     image_dir = f'{data_root}/coco/{dataType}/'
     det_ann_file = f'{data_root}/coco/ann_trainval2017/instances_{dataType}.json'
     ann_file = f'{data_root}/coco/ann_trainval2017/captions_{dataType}.json'

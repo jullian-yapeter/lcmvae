@@ -2,7 +2,9 @@ from models.basic_models.linear import Encoder, Decoder
 from models.lcmvae import LCMVAE
 from models.heads import ConvDecoder512
 from models.params import LCMVAE_PARAMS as LCMVAEP, VAE_PARAMS as VAEP
+from models.standalone_vae import StandaloneVAE
 from models.params import CONV_DECODER_512_PARAMS as CD512P
+from models.params import STANDALONE_VAE_PARAMS as SVAEP
 from train import Trainer
 from test import Tester
 from params import PRETRAIN_PARAMS as PTP
@@ -16,6 +18,7 @@ import cv2
 import torch
 import torch.nn as nn
 import matplotlib.pyplot as plt
+import numpy as np
 
 from PIL import Image
 import numpy as np
@@ -78,8 +81,8 @@ def main():
     
     # Build Dataloader for pretrain
     data_loader = DataLoader(dataset = coco_val2017, 
-                             batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
-                            #  batch_size=2,
+                            #  batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
+                             batch_size=2,
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
@@ -95,18 +98,21 @@ def main():
     # exit()
     
     lcmvae = LCMVAE(LCMVAEP, device=device)
+    # svae = StandaloneVAE(SVAEP, device=device)
     if pretrain:
         pretrainer = Trainer(lcmvae, PTP, experiment_name = experiment_name+"_pretrain", save_dir=save_dir)
         pretrainer.run(data=data_loader)
 
     if pretest:
-        lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
+        # lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = Decoder(LCMVAEP.vae_params.decoder_params)
         load_checkpoint(encoder, name=experiment_name+"_pretrain", save_dir=save_dir)
         load_checkpoint(decoder, name=experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
+        # svae.encoder = encoder
+        # svae.decoder = encoder
 
         tester = Tester(
             lcmvae, PTEP, experiment_name = experiment_name+"_pretest", save_dir=save_dir)
