@@ -172,7 +172,7 @@ def main():
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
-        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
+        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_train", downstream_criterion=criterion, save_dir=save_dir)
         trainer.run(data=data_loader)
 
     if test:
@@ -202,10 +202,6 @@ def main():
         plt.subplot(122)
         plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
         plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
-
-        
-
-    
 
 if __name__=="__main__":
     main()

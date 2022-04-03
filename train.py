@@ -155,7 +155,7 @@ class VAEPreTrainer():
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             batch_i = 0
-            for im_batch, cap_batch in tqdm(data, desc= f"batch_{batch_i}"):
+            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}"):
                 im_batch = im_batch.to(self.device)
                 if self.mask_maker: 
                     im_batch, masks = self.mask_maker(im_batch)
@@ -164,6 +164,7 @@ class VAEPreTrainer():
                 total_loss, rec_loss, kl_loss = self.model.loss(
                     im_batch, outputs, self.config.beta)
                 total_loss.backward()
+                
                 self.opt.step()
 
                 total_losses.append(total_loss.cpu().detach())
@@ -171,7 +172,7 @@ class VAEPreTrainer():
                 kl_losses.append(kl_loss.cpu().detach())
                 new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                 if new_loss < best_loss:
-                    save_checkpoint(self.model, name=self.name, )
+                    save_checkpoint(self.model, name=self.name, save_dir=self.save_dir)
                     best_loss = new_loss
                 if train_it % 500 == 0:
                     print(
@@ -179,13 +180,23 @@ class VAEPreTrainer():
                     )
                 train_it += 1
                 batch_i += 1
+        print("Done!")
 
         # log the loss training curves
-        fig = plt.figure(figsize=(10, 5))
-        ax1 = plt.subplot(121)
-        ax1.plot(rec_losses)
-        ax1.title.set_text("Reconstruction Loss")
-        ax2 = plt.subplot(122)
-        ax2.plot(kl_losses)
-        ax2.title.set_text("KL Loss")
-        plt.show()
+        plt.figure(figsize=(15, 5))
+        if self.downstream_criterion:
+            ax1 = plt.subplot(111)
+            ax1.plot(total_losses)
+            ax1.title.set_text("Total Loss")
+        else:
+            ax1 = plt.subplot(131)
+            ax1.plot(total_losses)
+            ax1.title.set_text("Total Loss")
+            ax2 = plt.subplot(132)
+            ax2.plot(rec_losses)
+            ax2.title.set_text("Reconstruction Loss")
+            ax3 = plt.subplot(133)
+            ax3.plot(kl_losses)
+            ax3.title.set_text("KL Loss")
+        plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+

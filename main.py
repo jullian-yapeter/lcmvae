@@ -136,7 +136,7 @@ def main():
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
-        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
+        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_train", downstream_criterion=criterion, save_dir=save_dir)
         trainer.run(data=data_loader)
 
     if test:
