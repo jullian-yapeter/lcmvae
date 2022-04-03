@@ -86,7 +86,7 @@ def rand_split(dataset, train_ratio=0.7, seed=None):
     assert len(dataset) == (len(train_dataset) + len(test_dataset))
     
     return train_dataset, test_dataset
-    
+
 def denormalize_torch_to_cv2(im, mean, std):
     im = im.permute(1, 2, 0) * std + mean
-    return torch.clip(im * 255, 0, 255).int().detach().numpy()
+    return torch.clip(im * 255, 0, 255).int().detach().numpy()[:, :, ::-1]

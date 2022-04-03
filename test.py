@@ -30,7 +30,7 @@ class Tester():
             else:
                 target = im_batch.clone().detach()
             with torch.no_grad():
-                outputs, _ = self.lcmvae(im_batch, cap_batch)
+                outputs, _ = self.lcmvae(im_batch, cap_batch, use_epsilon=False)
             if self.downstream_criterion:
                 total_loss = self.downstream_criterion(outputs["reconstruction"], target)
             else:
