@@ -81,10 +81,11 @@ def main():
     
     # Build Dataloader for pretrain
     data_loader = DataLoader(dataset = coco_val2017, 
-                            #  batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
-                             batch_size=2,
+                             batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
+                             # batch_size=2,
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
+
 
     # data_loader = [next(iter(data_loader))] # for testing only
     # # Check: print info for each batch

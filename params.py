@@ -1,11 +1,11 @@
 from utils import has_internet
 class PRETRAIN_PARAMS:
-    epochs = 1
+    epochs = 15
     learning_rate = 1e-4
     beta = 0
 
 class TRAIN_PARAMS:
-    epochs = 1
+    epochs = 15
     learning_rate = 1e-4
     beta = 0
 
@@ -30,7 +30,7 @@ class PRETRAIN_DATASET_PARAMS:
         if has_internet() else './saved_models/ViTMAE'
     
     # DataLoader
-    batch_size = 64
+    batch_size = 128
     shuffle = True
     num_workers = 0
     # WARN: when n_workers > 0, DataLoader will work slowly due to unknow reasons.
