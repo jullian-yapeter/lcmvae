@@ -1,7 +1,7 @@
 from models.basic_models.linear import Encoder, Decoder
 from models.lcmvae import LCMVAE
 from models.heads import ConvDecoder512
-from models.params import LCMVAE_PARAMS as LCMVAEP
+from models.params import LCMVAE_PARAMS as LCMVAEP, VAE_PARAMS as VAEP
 from models.params import CONV_DECODER_512_PARAMS as CD512P
 from train import Trainer
 from test import Tester
@@ -22,25 +22,33 @@ import numpy as np
 
 from torch.utils.data import DataLoader
 from dataset import MyCocoCaption, MyCocoCaptionDetection
+import sys, os, inspect, time
 
-from datetime import date
-import inspect
 def main():
-    today = date.today()
-    experiment_name = "sample_run" + today.strftime("-%Y-%m-%d") 
+    experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
+    print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
+
     pretrain = True
     pretest = False
     train = True
     test = False
 
+
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
     
-    with open(f'./output/PARAMS_{experiment_name}.txt', 'w') as f:
-        f.write(f"\# Experiment: {experiment_name}\n")
-        f.write(f"\# GPU Type: {torch.cuda.get_device_name()}\n\n")
+    save_dir = f"./saved_models/{experiment_name}"
+    if not os.path.exists(save_dir): 
+        os.mkdir(save_dir)
+    with open(f"{save_dir}/params_{experiment_name}.py", 'w+') as f:
+        f.write(f"# PARAMS for Experiment: {experiment_name}\n")
+        f.write(f"# GPU Type: {torch.cuda.get_device_name()}\n\n")
+        f.write(
+            "from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS\n"
+            "from utils import has_internet\n"
+            "import math, torch, torch.nn as nn\n\n")
         lines = map(inspect.getsource, [
-            PTP, PTEP, TP, TEP, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
+            PTP, PTEP, TP, TEP, LCMVAEP, VAEP, CD512P, PRETRAIN_DATASET_PARAMS])
         f.write('\n\n'.join(lines))
 
     # # Construct Dataset
@@ -87,54 +95,54 @@ def main():
     
     lcmvae = LCMVAE(LCMVAEP, device=device)
     if pretrain:
-        pretrainer = Trainer(lcmvae, PTP, experiment_name=experiment_name+"_pretrain")
+        pretrainer = Trainer(lcmvae, PTP, experiment_name = experiment_name+"_pretrain", save_dir=save_dir)
         pretrainer.run(data=data_loader)
 
     if pretest:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = Decoder(LCMVAEP.vae_params.decoder_params)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain")
-        load_checkpoint(decoder, name=experiment_name+"_pretrain")
+        load_checkpoint(encoder, name=experiment_name+"_pretrain", save_dir=save_dir)
+        load_checkpoint(decoder, name=experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
+            lcmvae, PTEP, experiment_name = experiment_name+"_pretest", save_dir=save_dir)
         tester.run(data=data_loader)
 
         im, (cap, _) = coco_val2017[0]
         target = denormalize_torch_to_cv2(im, image_mean, image_std)
-        cv2.imwrite(f"output/{experiment_name}_target.jpg", target)
+        cv2.imwrite(f"{save_dir}/{experiment_name}_target.jpg", target)
         reconstruction, mask = lcmvae.run(im[None], [cap])
         print(mask)
         print(reconstruction.shape)
         prediction = denormalize_torch_to_cv2(reconstruction, image_mean, image_std)
-        cv2.imwrite(f"output/{experiment_name}.jpg", prediction)
+        cv2.imwrite(f"{save_dir}/{experiment_name}.jpg", prediction)
 
     if train:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain")
+        load_checkpoint(encoder, name = experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
-        trainer = Trainer(lcmvae, TP, experiment_name=experiment_name+"_train", downstream_criterion=criterion)
+        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
         trainer.run(data=data_loader)
 
     if test:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_train")
-        load_checkpoint(decoder, name=experiment_name+"_train")
+        load_checkpoint(encoder, name=experiment_name+"_train", save_dir=save_dir)
+        load_checkpoint(decoder, name=experiment_name+"_train", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_test", downstream_criterion=criterion)
+            lcmvae, PTEP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
         tester.run(data=data_loader)
 
         im, (cap, seg) = coco_val2017[0]
@@ -149,11 +157,9 @@ def main():
         plt.imshow(seg.squeeze(), vmin=0, vmax=9)
         plt.subplot(122)
         plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
-        plt.savefig(f"output/{experiment_name}_segmentation.jpg")
-
-        
-
-    
+        plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
 
 if __name__=="__main__":
     main()
+
+
