@@ -6,7 +6,7 @@ from torch.utils.data import random_split
 import os
 import http.client as httplib
 
-def save_checkpoint(model, name=None):
+def save_checkpoint(model, name=None, save_dir=None):
     # automatically create saved_models folder
     try:
         os.mkdir('saved_models')
@@ -14,26 +14,28 @@ def save_checkpoint(model, name=None):
     except FileExistsError:
         pass
     
+    save_dir = save_dir if save_dir is not None else 'saved_models'
     if name is not None:
-        torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}_{name}")
+        torch.save(model.state_dict(), f"{save_dir}/{model.checkpoint_file}_{name}")
     else:
-        torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}")
+        torch.save(model.state_dict(), f"{save_dir}/{model.checkpoint_file}")
 
 
-def load_checkpoint(model, checkpoint_file=None, name=None):
+def load_checkpoint(model, checkpoint_file=None, name=None, save_dir=None):
     if checkpoint_file:
         model.load_state_dict(
             torch.load(checkpoint_file, map_location=model.device))
         print(f"loaded {checkpoint_file}")
     else:
+        save_dir = save_dir if save_dir is not None else 'saved_models'
         if name is not None:
             model.load_state_dict(
-                torch.load(f"saved_models/{model.checkpoint_file}_{name}", map_location=model.device))
-            print(f"loaded saved_models/{model.checkpoint_file}_{name}")
+                torch.load(f"{save_dir}/{model.checkpoint_file}_{name}", map_location=model.device))
+            print(f"loaded {save_dir}/{model.checkpoint_file}_{name}")
         else:
             model.load_state_dict(
-                torch.load(f"saved_models/{model.checkpoint_file}", map_location=model.device))
-            print(f"loaded saved_models/{model.checkpoint_file}")
+                torch.load(f"{save_dir}/{model.checkpoint_file}", map_location=model.device))
+            print(f"loaded {save_dir}/{model.checkpoint_file}")
 
 def log_losses(losses, name):
     loss_log = {}

@@ -37,8 +37,8 @@ def main():
         'cuda' if torch.cuda.is_available() else 'cpu')
     
     with open(f'./output/PARAMS_{experiment_name}.txt', 'w') as f:
-        f.write(f"Experiment: {experiment_name}\n")
-        f.write(f"GPU Type: {torch.cuda.get_device_name()}\n\n")
+        f.write(f"\# Experiment: {experiment_name}\n")
+        f.write(f"\# GPU Type: {torch.cuda.get_device_name()}\n\n")
         lines = map(inspect.getsource, [
             PTP, PTEP, TP, TEP, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
         f.write('\n\n'.join(lines))

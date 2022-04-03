@@ -8,7 +8,8 @@ from tqdm import tqdm
 
 
 class Trainer():
-    def __init__(self, lcmvae, PTP, experiment_name=None, downstream_criterion=None):
+    def __init__(self, lcmvae, PTP, experiment_name=None, downstream_criterion=None, save_dir=None):
+        self.save_dir = save_dir
         self.config = PTP
         self.name = experiment_name
         self.device = torch.device(
@@ -31,6 +32,7 @@ class Trainer():
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
+                seg_batch = seg_batch.to(self.device)
                 if self.downstream_criterion:
                     target = seg_batch.clone().detach().squeeze(dim=1)
                 else:
@@ -51,10 +53,10 @@ class Trainer():
                     kl_losses.append(kl_loss.cpu().detach())
                 new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                 if new_loss < best_loss:
-                    save_checkpoint(self.lcmvae.vae.encoder, name=self.name)
-                    save_checkpoint(self.lcmvae.vae.decoder, name=self.name)
+                    save_checkpoint(self.lcmvae.vae.encoder, name=self.name, save_dir=self.save_dir)
+                    save_checkpoint(self.lcmvae.vae.decoder, name=self.name, save_dir=self.save_dir)
                     best_loss = new_loss
-                if train_it % 10 == 0:
+                if train_it % 500 == 0:
                     if self.downstream_criterion:
                         print(
                             f"It {train_it}: Total Loss: {total_loss.cpu().detach()}"
@@ -135,7 +137,8 @@ class Trainer():
 
 
 class VAEPreTrainer():
-    def __init__(self, model, config, mask_maker=None, experiment_name=None):
+    def __init__(self, model, config, mask_maker=None, experiment_name=None, save_dir=None):
+        self.save_dir = save_dir
         self.config = config
         self.name = experiment_name
         self.device = torch.device(
@@ -168,9 +171,9 @@ class VAEPreTrainer():
                 kl_losses.append(kl_loss.cpu().detach())
                 new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                 if new_loss < best_loss:
-                    save_checkpoint(self.model, name=self.name)
+                    save_checkpoint(self.model, name=self.name, )
                     best_loss = new_loss
-                if train_it % 10 == 0:
+                if train_it % 500 == 0:
                     print(
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                     )

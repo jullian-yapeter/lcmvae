@@ -81,10 +81,19 @@ def main():
         'cuda' if torch.cuda.is_available() else 'cpu')
     
     save_dir = f"./saved_models/{experiment_name}"
-    if not os.path.exists(save_dir): os.makedirs(save_dir)
-    with open(f"{save_dir}/PARAMS_{experiment_name}.txt", 'w') as f:
-        f.write(f"Experiment: {experiment_name}\n")
-        f.write(f"GPU Type: {torch.cuda.get_device_name()}\n\n")
+    if not os.path.exists(save_dir): 
+        os.mkdir(save_dir)
+        os.mkdir(save_dir+'/pretrain')
+        os.mkdir(save_dir+'/train')
+        os.mkdir(save_dir+'/pretest')
+        os.mkdir(save_dir+'/test')
+    with open(f"{save_dir}/params_{experiment_name}.py", 'w+') as f:
+        f.write(f"# PARAMS for Experiment: {experiment_name}\n")
+        f.write(f"# GPU Type: {torch.cuda.get_device_name()}\n\n")
+        f.write(
+            "from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS\n"
+            "from utils import has_internet\n"
+            "import math, torch, torch.nn as nn\n\n")
         lines = map(inspect.getsource, [
             PTP, PTEP, TP, TEP, SMALL_VAE_PARAMS, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
         f.write('\n\n'.join(lines))
@@ -134,20 +143,20 @@ def main():
     
     lcmvae = LCMVAE(LCMVAEP, device=device)
     if pretrain:
-        pretrainer = Trainer(lcmvae, PTP, experiment_name=experiment_name+"_pretrain")
+        pretrainer = Trainer(lcmvae, PTP, experiment_name = experiment_name+"_pretrain", save_dir=save_dir)
         pretrainer.run(data=data_loader)
 
     if pretest:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = Decoder(LCMVAEP.vae_params.decoder_params)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain")
-        load_checkpoint(decoder, name=experiment_name+"_pretrain")
+        load_checkpoint(encoder, name=experiment_name+"_pretrain", save_dir=save_dir)
+        load_checkpoint(decoder, name=experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
+            lcmvae, PTEP, experiment_name = experiment_name+"_pretest", save_dir=save_dir)
         tester.run(data=data_loader)
 
         im, (cap, _) = coco_val2017[0]
@@ -163,25 +172,25 @@ def main():
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain")
+        load_checkpoint(encoder, name = experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
-        trainer = Trainer(lcmvae, TP, experiment_name=experiment_name+"_train", downstream_criterion=criterion)
+        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
         trainer.run(data=data_loader)
 
     if test:
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_train")
-        load_checkpoint(decoder, name=experiment_name+"_train")
+        load_checkpoint(encoder, name=experiment_name+"_train", save_dir=save_dir)
+        load_checkpoint(decoder, name=experiment_name+"_train", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_test", downstream_criterion=criterion)
+            lcmvae, PTEP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
         tester.run(data=data_loader)
 
         im, (cap, seg) = coco_val2017[0]

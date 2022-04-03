@@ -1,24 +1,13 @@
 from utils import has_internet
 class PRETRAIN_PARAMS:
-    epochs = 5
+    epochs = 1
     learning_rate = 1e-4
     beta = 0
 
 class TRAIN_PARAMS:
-    epochs = 5
+    epochs = 1
     learning_rate = 1e-4
     beta = 0
-
-class PRETRAIN_PARAMS_b:
-    epochs = 5
-    learning_rate = 1e-4
-    beta = 1e-7
-
-class TRAIN_PARAMS_b:
-    epochs = 5
-    learning_rate = 1e-4
-    beta = 1e-7
-
 
 class PRETEST_PARAMS:
     beta = 0
@@ -29,7 +18,7 @@ class TEST_PARAMS:
     
 class PRETRAIN_DATASET_PARAMS:
     data_root = './data'
-    dataType = 'train2017'  # dataType: 'train2017' or 'val2017'
+    dataType = 'val2017'  # dataType: 'train2017' or 'val2017'
     image_dir = f'{data_root}/coco/{dataType}/'
     det_ann_file = f'{data_root}/coco/ann_trainval2017/instances_{dataType}.json'
     ann_file = f'{data_root}/coco/ann_trainval2017/captions_{dataType}.json'
