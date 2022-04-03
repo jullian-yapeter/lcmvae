@@ -48,7 +48,7 @@ def main():
             "from utils import has_internet\n"
             "import math, torch, torch.nn as nn\n\n")
         lines = map(inspect.getsource, [
-            PTP, PTEP, TP, TEP, LCMVAEP, VAEP, CD512P, PRETRAIN_DATASET_PARAMS])
+            PTP, PTEP, TP, TEP, VAEP, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
         f.write('\n\n'.join(lines))
 
     # # Construct Dataset
@@ -83,6 +83,7 @@ def main():
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
+    # data_loader = [next(iter(data_loader))] # for testing only
     # # Check: print info for each batch
     # i = 0
     # for imgs, (caps, segment) in data_loader:
