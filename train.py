@@ -85,7 +85,7 @@ class Trainer():
             ax3 = plt.subplot(133)
             ax3.plot(kl_losses)
             ax3.title.set_text("KL Loss")
-        plt.savefig(f"output/{self.name}_plot.jpg")
+        plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
 
 
 # class Trainer():
