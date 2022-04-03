@@ -23,7 +23,7 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 import math
 from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
-from datetime import date
+import time
 import os, sys, inspect
 
 class SMALL_VAE_PARAMS:
@@ -67,8 +67,7 @@ class LCMVAEP:
     use_epsilon = True
 
 def main():
-    today = date.today()
-    experiment_name = sys.argv[0][5:-3] + today.strftime("-%Y-%m-%d") 
+    experiment_name = sys.argv[0][5:-3] + time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
 
     pretrain = True
@@ -83,10 +82,6 @@ def main():
     save_dir = f"./saved_models/{experiment_name}"
     if not os.path.exists(save_dir): 
         os.mkdir(save_dir)
-        os.mkdir(save_dir+'/pretrain')
-        os.mkdir(save_dir+'/train')
-        os.mkdir(save_dir+'/pretest')
-        os.mkdir(save_dir+'/test')
     with open(f"{save_dir}/params_{experiment_name}.py", 'w+') as f:
         f.write(f"# PARAMS for Experiment: {experiment_name}\n")
         f.write(f"# GPU Type: {torch.cuda.get_device_name()}\n\n")
@@ -131,6 +126,7 @@ def main():
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
+    # data_loader = [next(iter(data_loader))] # for testing
     # # Check: print info for each batch
     # i = 0
     # for imgs, (caps, segment) in data_loader:
@@ -141,8 +137,6 @@ def main():
     #     i += 1
     # exit()
     
-    data_loader = [next(iter(data_loader))]
-
     lcmvae = LCMVAE(LCMVAEP, device=device)
     if pretrain:
         pretrainer = Trainer(lcmvae, PTP, experiment_name = experiment_name+"_pretrain", save_dir=save_dir)
@@ -209,7 +203,9 @@ def main():
         plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
         plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
 
-           
+        
+
+    
 
 if __name__=="__main__":
     main()

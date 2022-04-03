@@ -61,9 +61,9 @@ class CD512P:
 class LCMVAEP:
     checkpoint_file = "lcmvae"
     is_mae = True
-    mask_ratio = 0
+    mask_ratio = 0.75
     vae_params = SMALL_VAE_PARAMS()
-    no_caption = False
+    no_caption = True
     use_epsilon = False
 
 def main():
