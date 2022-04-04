@@ -28,7 +28,7 @@ class Trainer():
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             batch_i = 0
-            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}"):
+            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}", mininterval=10):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
@@ -57,6 +57,23 @@ class Trainer():
                     save_checkpoint(self.lcmvae.vae.decoder, name=self.name, save_dir=self.save_dir)
                     best_loss = new_loss
                 if train_it % 500 == 0:
+                    # log the loss training curves
+                    plt.figure(figsize=(15, 5))
+                    if self.downstream_criterion:
+                        ax1 = plt.subplot(111)
+                        ax1.plot(total_losses)
+                        ax1.title.set_text("Total Loss")
+                    else:
+                        ax1 = plt.subplot(131)
+                        ax1.plot(total_losses)
+                        ax1.title.set_text("Total Loss")
+                        ax2 = plt.subplot(132)
+                        ax2.plot(rec_losses)
+                        ax2.title.set_text("Reconstruction Loss")
+                        ax3 = plt.subplot(133)
+                        ax3.plot(kl_losses)
+                        ax3.title.set_text("KL Loss")
+                    plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
                     if self.downstream_criterion:
                         print(
                             f"It {train_it}: Total Loss: {total_loss.cpu().detach()}"
@@ -69,23 +86,7 @@ class Trainer():
                 batch_i += 1
         print("Done!")
 
-        # log the loss training curves
-        plt.figure(figsize=(15, 5))
-        if self.downstream_criterion:
-            ax1 = plt.subplot(111)
-            ax1.plot(total_losses)
-            ax1.title.set_text("Total Loss")
-        else:
-            ax1 = plt.subplot(131)
-            ax1.plot(total_losses)
-            ax1.title.set_text("Total Loss")
-            ax2 = plt.subplot(132)
-            ax2.plot(rec_losses)
-            ax2.title.set_text("Reconstruction Loss")
-            ax3 = plt.subplot(133)
-            ax3.plot(kl_losses)
-            ax3.title.set_text("KL Loss")
-        plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+        
 
 
 # class Trainer():
@@ -155,7 +156,7 @@ class VAEPreTrainer():
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             batch_i = 0
-            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}"):
+            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}", mininterval=10):
                 im_batch = im_batch.to(self.device)
                 if self.mask_maker: 
                     im_batch, masks = self.mask_maker(im_batch)
@@ -175,6 +176,23 @@ class VAEPreTrainer():
                     save_checkpoint(self.model, name=self.name, save_dir=self.save_dir)
                     best_loss = new_loss
                 if train_it % 500 == 0:
+                          # log the loss training curves
+                    plt.figure(figsize=(15, 5))
+                    if self.downstream_criterion:
+                        ax1 = plt.subplot(111)
+                        ax1.plot(total_losses)
+                        ax1.title.set_text("Total Loss")
+                    else:
+                        ax1 = plt.subplot(131)
+                        ax1.plot(total_losses)
+                        ax1.title.set_text("Total Loss")
+                        ax2 = plt.subplot(132)
+                        ax2.plot(rec_losses)
+                        ax2.title.set_text("Reconstruction Loss")
+                        ax3 = plt.subplot(133)
+                        ax3.plot(kl_losses)
+                        ax3.title.set_text("KL Loss")
+                    plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
                     print(
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                     )
@@ -182,21 +200,5 @@ class VAEPreTrainer():
                 batch_i += 1
         print("Done!")
 
-        # log the loss training curves
-        plt.figure(figsize=(15, 5))
-        if self.downstream_criterion:
-            ax1 = plt.subplot(111)
-            ax1.plot(total_losses)
-            ax1.title.set_text("Total Loss")
-        else:
-            ax1 = plt.subplot(131)
-            ax1.plot(total_losses)
-            ax1.title.set_text("Total Loss")
-            ax2 = plt.subplot(132)
-            ax2.plot(rec_losses)
-            ax2.title.set_text("Reconstruction Loss")
-            ax3 = plt.subplot(133)
-            ax3.plot(kl_losses)
-            ax3.title.set_text("KL Loss")
-        plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+  
 
