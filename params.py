@@ -34,8 +34,8 @@ class PRETRAIN_DATASET_PARAMS:
      
 class MODE_PARAMS:
     experiment_name = "no_mask"
-    pretrain = True
-    pretest = False
+    pretrain = False
+    pretest = True
     train = False
     test = False
     
