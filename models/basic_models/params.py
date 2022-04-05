@@ -13,4 +13,4 @@ class LINEAR_NETWORK_PARAMS:
 
 class DECODER_PARAMS:
     im_dims = (3, 224, 224)
-    linear_params = LINEAR_NETWORK_PARAMS
+    linear_params = LINEAR_NETWORK_PARAMS()

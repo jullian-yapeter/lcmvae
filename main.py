@@ -1,8 +1,8 @@
 from models.basic_models.linear import Encoder, Decoder
 from models.lcmvae import LCMVAE
 from models.heads import ConvDecoder512
+from models.params import LCMVAE_PARAMS as LCMVAEP, VAE_PARAMS as VAEP
 from models.standalone_vae import StandaloneVAE
-from models.params import LCMVAE_PARAMS as LCMVAEP
 from models.params import CONV_DECODER_512_PARAMS as CD512P
 from models.params import STANDALONE_VAE_PARAMS as SVAEP
 from train import Trainer
@@ -11,13 +11,8 @@ from params import PRETRAIN_PARAMS as PTP
 from params import PRETEST_PARAMS as PTEP
 from params import TRAIN_PARAMS as TP
 from params import TEST_PARAMS as TEP
-<<<<<<< HEAD
-from utils import load_checkpoint
-from params import PRETRAIN_DATASET_PARAMS, MODE_PARAMS
-=======
 from utils import load_checkpoint, denormalize_torch_to_cv2
 from params import PRETRAIN_DATASET_PARAMS
->>>>>>> 28c513c60dacbc336d602145588e7807bcb4891c
 
 import cv2
 import torch
@@ -30,31 +25,35 @@ import numpy as np
 
 from torch.utils.data import DataLoader
 from dataset import MyCocoCaption, MyCocoCaptionDetection
+import sys, os, inspect, time
 
-from datetime import date
-    
 def main():
-<<<<<<< HEAD
-    experiment_name = MODE_PARAMS.experiment_name
-    pretrain = MODE_PARAMS.pretrain
-    pretest = MODE_PARAMS.pretest
-    train = MODE_PARAMS.train
-    test = MODE_PARAMS.test
-    
-=======
-    today = date.today()
-    experiment_name = "sample_run" + today.strftime("-%Y-%m-%d") 
-    # experiment_name = "trained_experiment_name"
+    experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
+    print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
+
     pretrain = True
     pretest = False
     train = True
     test = False
 
 
->>>>>>> 28c513c60dacbc336d602145588e7807bcb4891c
     device = torch.device(
         'cuda' if torch.cuda.is_available() else 'cpu')
     
+    save_dir = f"./saved_models/{experiment_name}"
+    if not os.path.exists(save_dir): 
+        os.mkdir(save_dir)
+    with open(f"{save_dir}/params_{experiment_name}.py", 'w+') as f:
+        f.write(f"# PARAMS for Experiment: {experiment_name}\n")
+        f.write(f"# GPU Type: {torch.cuda.get_device_name()}\n\n")
+        f.write(
+            "from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS\n"
+            "from utils import has_internet\n"
+            "import math, torch, torch.nn as nn\n\n")
+        lines = map(inspect.getsource, [
+            PTP, PTEP, TP, TEP, VAEP, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
+        f.write('\n\n'.join(lines))
+
     # # Construct Dataset
     # coco_val2017 = MyCocoCaption(root = PRETRAIN_DATASET_PARAMS.image_dir,
     #                             annFile = PRETRAIN_DATASET_PARAMS.ann_file,
@@ -82,11 +81,13 @@ def main():
     
     # Build Dataloader for pretrain
     data_loader = DataLoader(dataset = coco_val2017, 
-                            #  batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
-                             batch_size=2,
+                             batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
+                             # batch_size=2,
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
+
+    # data_loader = [next(iter(data_loader))] # for testing only
     # # Check: print info for each batch
     # i = 0
     # for imgs, (caps, segment) in data_loader:
@@ -100,71 +101,56 @@ def main():
     lcmvae = LCMVAE(LCMVAEP, device=device)
     # svae = StandaloneVAE(SVAEP, device=device)
     if pretrain:
-        pretrainer = Trainer(lcmvae, PTP, experiment_name=experiment_name+"_pretrain")
+        pretrainer = Trainer(lcmvae, PTP, experiment_name = experiment_name+"_pretrain", save_dir=save_dir)
         pretrainer.run(data=data_loader)
 
     if pretest:
         # lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = Decoder(LCMVAEP.vae_params.decoder_params)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain")
-        load_checkpoint(decoder, name=experiment_name+"_pretrain")
+        load_checkpoint(encoder, name=experiment_name+"_pretrain", save_dir=save_dir)
+        load_checkpoint(decoder, name=experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         # svae.encoder = encoder
         # svae.decoder = encoder
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
+            lcmvae, PTEP, experiment_name = experiment_name+"_pretest", save_dir=save_dir)
         tester.run(data=data_loader)
 
-        for i in range(10):
-            im, (cap, _) = coco_val2017[i]
-            target = denormalize_torch_to_cv2(im, image_mean, image_std)
-            reconstruction, mask = lcmvae.run(im[None], [cap])
-            # reconstruction = svae.reconstruct(im[None])["reconstruction"]
-            prediction = denormalize_torch_to_cv2(
-                reconstruction, image_mean, image_std)
-            result = np.concatenate((target, prediction), axis=1)
-            cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
+        im, (cap, _) = coco_val2017[0]
+        target = denormalize_torch_to_cv2(im, image_mean, image_std)
+        cv2.imwrite(f"{save_dir}/{experiment_name}_target.jpg", target)
+        reconstruction, mask = lcmvae.run(im[None], [cap])
+        print(mask)
+        print(reconstruction.shape)
+        prediction = denormalize_torch_to_cv2(reconstruction, image_mean, image_std)
+        cv2.imwrite(f"{save_dir}/{experiment_name}.jpg", prediction)
 
-    
-    im_dims = (3,224,224)
     if train:
-<<<<<<< HEAD
-        test_data = [[dog_im, dog_cap, dog_im], [cat_im, cat_cap, cat_im]]
-        head = ReconstructionHead(
-            LCMVAEP.vae_params.decoder_params, im_dims=im_dims)
-=======
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
->>>>>>> 28c513c60dacbc336d602145588e7807bcb4891c
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain")
+        load_checkpoint(encoder, name = experiment_name+"_pretrain", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
-        trainer = Trainer(lcmvae, TP, experiment_name=experiment_name+"_train", downstream_criterion=criterion)
+        trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_train", downstream_criterion=criterion, save_dir=save_dir)
         trainer.run(data=data_loader)
 
     if test:
-<<<<<<< HEAD
-        test_data = [[dog_im, dog_cap, dog_im], [cat_im, cat_cap, cat_im]]
-        head = ReconstructionHead(
-            LCMVAEP.vae_params.decoder_params, im_dims=im_dims)
-=======
         lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
->>>>>>> 28c513c60dacbc336d602145588e7807bcb4891c
         encoder = Encoder(LCMVAEP.vae_params.encoder_params)
         decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_train")
-        load_checkpoint(decoder, name=experiment_name+"_train")
+        load_checkpoint(encoder, name=experiment_name+"_train", save_dir=save_dir)
+        load_checkpoint(decoder, name=experiment_name+"_train", save_dir=save_dir)
         lcmvae.vae.encoder = encoder
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name=experiment_name+"_test", downstream_criterion=criterion)
+            lcmvae, PTEP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
         tester.run(data=data_loader)
 
         im, (cap, seg) = coco_val2017[0]
@@ -179,11 +165,7 @@ def main():
         plt.imshow(seg.squeeze(), vmin=0, vmax=9)
         plt.subplot(122)
         plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
-        plt.savefig(f"output/{experiment_name}_segmentation.jpg")
-
-        
-
-    
+        plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
 
 if __name__=="__main__":
     main()

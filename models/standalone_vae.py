@@ -115,10 +115,15 @@ class StandaloneVAE(nn.Module):
             "mean": torch.zeros(config.embed_dim, device=self.device),
             "log_sigma": torch.zeros(config.embed_dim, device=self.device)
         }
+        self.encoder.apply(StandaloneVAE._init_vae_weights)
+        self.decoder.apply(StandaloneVAE._init_vae_weights)
+
+
+
 
     def forward(self, x, pretraining=True):
         encoder_out = self.encoder(x)
-        mean = encoder_out[:, :self.embed_dim]
+        mean = encoder_out[:, :self.config.embed_dim]
         log_sigma = encoder_out[:, self.config.embed_dim:]
         reconstruction = None
         if pretraining:
@@ -162,4 +167,12 @@ class StandaloneVAE(nn.Module):
         return (log_sigma2 - log_sigma1) + (torch.exp(log_sigma1) ** 2 + (mu1 - mu2) ** 2) \
             / (2 * torch.exp(log_sigma2) ** 2) - 0.5
 
+    
+    @staticmethod
+    def _init_vae_weights(m):
+        try:
+            nn.init.xavier_uniform_(m.weight)
+            m.bias.data.fill_(0.01)
+        except:
+            pass
 
