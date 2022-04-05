@@ -123,7 +123,7 @@ class StandaloneVAE(nn.Module):
         reconstruction = None
         if pretraining:
             epsilon = torch.randn(
-                x.shape[0], self.embed_dim, device=self.device)
+                x.shape[0], self.config.embed_dim, device=self.device)
             z = mean + torch.exp(log_sigma) * epsilon
             decoder_out = self.decoder(z)
             reconstruction = decoder_out.view(-1, *self.config.im_dims)

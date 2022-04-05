@@ -13,21 +13,22 @@ class LCMVAE(nn.Module):
         self.checkpoint_file = self.config.checkpoint_file
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        self.im_cap_encoder = ImageCaptionEncoder(is_mae=self.config.is_mae, mask_ratio=self.config.mask_ratio, device=device)
+        self.im_cap_encoder = ImageCaptionEncoder(is_mae=self.config.is_mae, mask_ratio=self.config.mask_ratio, no_caption=self.config.no_caption, device=device)
         self.vae = VAE(self.config.vae_params, device=device)
+        self.vae.apply(LCMVAE._init_vae_weights)
         
-    def forward(self, images, captions, pretraining=True):
+    def forward(self, images, captions, use_epsilon=True):
         mask = None
         with torch.no_grad():
             if self.config.is_mae:
                 im_cap_embedding, mask = self.im_cap_encoder.forward(images, captions)
             else:
                 im_cap_embedding = self.im_cap_encoder.forward(images, captions)
-        vae_outputs = self.vae(im_cap_embedding, pretraining=pretraining)
+        vae_outputs = self.vae(im_cap_embedding, use_epsilon=use_epsilon)
         return vae_outputs, mask
 
-    def loss(self, target_images, vae_outputs, beta):
-        return self.vae.loss(target_images, vae_outputs, beta)
+    def loss(self, vae_outputs, target_images, beta):
+        return self.vae.loss(vae_outputs, target_images, beta)
 
     def reconstruct(self, images, captions):
         mask = None
@@ -41,7 +42,15 @@ class LCMVAE(nn.Module):
 
     def run(self, images, captions):
         outputs, mask = self.reconstruct(images, captions)
-        return outputs["reconstruction"][0].detach().numpy() * 255, mask
+        return outputs["reconstruction"][0], mask
+
+    @staticmethod
+    def _init_vae_weights(m):
+        try:
+            nn.init.xavier_uniform_(m.weight)
+            m.bias.data.fill_(0.01)
+        except:
+            pass
 
 
 # class LCMVAEDownstream(nn.Module):

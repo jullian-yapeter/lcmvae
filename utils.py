@@ -4,7 +4,7 @@ import json
 from statistics import mean, variance
 from torch.utils.data import random_split
 import os
-
+import http.client as httplib
 
 def save_checkpoint(model, name=None):
     # automatically create saved_models folder
@@ -18,6 +18,7 @@ def save_checkpoint(model, name=None):
         torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}_{name}")
     else:
         torch.save(model.state_dict(), f"saved_models/{model.checkpoint_file}")
+
 
 def load_checkpoint(model, checkpoint_file=None, name=None):
     if checkpoint_file:
@@ -41,12 +42,25 @@ def log_losses(losses, name):
     for loss_name, loss_list in losses.items():
         loss_log["means"][loss_name] = mean(loss_list)
 
+
     loss_log["variances"] = {}
     for loss_name, loss_list in losses.items():
-        loss_log["variances"][loss_name] = variance(loss_list)
+        if len(loss_list) > 1:
+            loss_log["variances"][loss_name] = variance(loss_list)
 
     with open(f"output/{name}.json", "w") as outfile:
         json.dump(loss_log, outfile)
+
+
+def has_internet():
+    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+    try:
+        conn.request("HEAD", "/")
+        return True
+    except Exception:
+        return False
+    finally:
+        conn.close()
 
 
 ###################
@@ -72,4 +86,7 @@ def rand_split(dataset, train_ratio=0.7, seed=None):
     assert len(dataset) == (len(train_dataset) + len(test_dataset))
     
     return train_dataset, test_dataset
-    
+
+def denormalize_torch_to_cv2(im, mean, std):
+    im = im.permute(1, 2, 0) * std + mean
+    return torch.clip(im * 255, 0, 255).int().detach().numpy()[:, :, ::-1]
