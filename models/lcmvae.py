@@ -17,8 +17,9 @@ class LCMVAE(nn.Module):
         self.vae = VAE(self.config.vae_params, device=device)
         self.vae.apply(LCMVAE._init_vae_weights)
         
-    def forward(self, images, captions):
-        use_epsilon = self.config.use_epsilon
+    def forward(self, images, captions, use_epsilon=None):
+        if use_epsilon is None:
+            use_epsilon = self.config.use_epsilon 
         mask = None
         with torch.no_grad():
             if self.config.is_mae:
