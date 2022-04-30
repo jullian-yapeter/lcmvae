@@ -21,18 +21,12 @@ class LCMVAE(nn.Module):
             device=device)
         self.vae = VAE(self.config.vae_params, device=device)
         self.vae.apply(LCMVAE._init_vae_weights)
-<<<<<<< HEAD
-        
-    def forward(self, images, captions):
-        use_epsilon = self.config.use_epsilon
-=======
         if self.config.use_latent_regularizer:
             self.latent_reconstructor = LatentReconstructor(
                 self.config.latent_reconstructor_params, device=device)
             self.latent_reconstructor_loss = nn.MSELoss()
 
     def forward(self, images, captions):
->>>>>>> e1425eab626d6faaf67ba67a8b114b0e03947c14
         mask = None
         with torch.no_grad():
             if self.config.is_mae:
