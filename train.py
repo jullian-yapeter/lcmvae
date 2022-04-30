@@ -15,7 +15,8 @@ class Trainer():
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.lcmvae = lcmvae.train()
         self.lcmvae.im_cap_encoder.vit.model.eval()
-        self.lcmvae.im_cap_encoder.bert.model.eval()
+        if self.lcmvae.im_cap_encoder.bert:
+            self.lcmvae.im_cap_encoder.bert.model.eval()
         self.opt = torch.optim.Adam(self.lcmvae.vae.parameters(),
                                lr=self.config.learning_rate)
         self.downstream_criterion = downstream_criterion

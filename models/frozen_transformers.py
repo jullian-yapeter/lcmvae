@@ -105,7 +105,7 @@ class ImageCaptionEncoder():
             image_encodings, mask = self.vit.forward(images)
         else:
             image_encodings = self.vit.forward(images)
-        caption_encodings = self.bert.forward(captions) if self.bert else torch.zeros(image_encodings.shape)
+        caption_encodings = self.bert.forward(captions) if self.bert else torch.zeros((image_encodings.shape[0], 768))
         return torch.cat((image_encodings, caption_encodings), dim=-1), mask
 
 
