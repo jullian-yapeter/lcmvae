@@ -142,6 +142,7 @@ def main():
     if train:
         lcmvae = torch.load(
             f"saved_models/lcmvae_{experiment_name+'_pretrain'}")
+        lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0.0
         decoder = ConvDecoder768(lcmvae.config.embed_dim, out_channels=10, device=device)
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
@@ -151,24 +152,29 @@ def main():
     if test:
         lcmvae = torch.load(
             f"saved_models/lcmvae_{experiment_name+'_train'}")
+        lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0.0
         criterion = nn.CrossEntropyLoss(reduction="sum")
 
         tester = Tester(
             lcmvae, TEP, experiment_name=experiment_name+"_test", downstream_criterion=criterion)
         tester.run(data=data_loader)
 
-        im, (cap, seg) = coco_val2017[0]
-        reconstruction, mask = lcmvae.run(im[None], [cap])
-        prediction = torch.argmax(reconstruction, dim=0)
-        print(prediction.shape)
-        print(f"Actual classes: {torch.unique(seg)}")
-        print(f"Predicted classes: {torch.unique(prediction)}")
-        plt.figure(figsize=(12, 5))
-        plt.subplot(121)
-        plt.imshow(seg.squeeze(), vmin=0, vmax=9)
-        plt.subplot(122)
-        plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
-        plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
+        for i in range(10):
+            im, (cap, seg) = coco_val2017[i]
+            reconstruction, _ = lcmvae.run(im[None], [cap])
+            prediction = torch.argmax(reconstruction, dim=0)
+            print(f"Actual classes: {torch.unique(seg)}")
+            print(f"Predicted classes: {torch.unique(prediction)}")
+            plt.figure(figsize=(12, 5))
+            plt.subplot(121)
+            plt.imshow(seg.squeeze(), vmin=0, vmax=9)
+            plt.subplot(122)
+            plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
+            plt.savefig(f"{save_dir}/{experiment_name}_segmentation.jpg")
+
+        
+
+    
 
 if __name__=="__main__":
     main()
