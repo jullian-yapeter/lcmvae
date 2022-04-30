@@ -13,6 +13,8 @@ class Tester():
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.lcmvae = lcmvae.eval()
+        self.lcmvae.config.use_latent_regularizer = False
+        self.lcmvae.config.use_epsilon = False
         self.downstream_criterion = downstream_criterion
 
 
@@ -30,7 +32,7 @@ class Tester():
             else:
                 target = im_batch.clone().detach()
             with torch.no_grad():
-                outputs, _ = self.lcmvae(im_batch, cap_batch, use_epsilon=False)
+                outputs, _ = self.lcmvae(im_batch, cap_batch)
             if self.downstream_criterion:
                 total_loss = self.downstream_criterion(outputs["reconstruction"], target)
             else:

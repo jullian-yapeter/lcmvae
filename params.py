@@ -1,13 +1,18 @@
 from utils import has_internet
+
+
 class PRETRAIN_PARAMS:
-    epochs = 100
-    learning_rate = 1e-4
-    beta = 0
+    epochs = 200
+    learning_rate = 2e-4
+    beta = 5e1
+    delta = 5e4
+
 
 class TRAIN_PARAMS:
-    epochs = 100
-    learning_rate = 1e-4
+    epochs = 200
+    learning_rate = 2e-4
     beta = 0
+
 
 class PRETEST_PARAMS:
     beta = 0
@@ -16,6 +21,7 @@ class PRETEST_PARAMS:
 class TEST_PARAMS:
     beta = 0
     
+
 class PRETRAIN_DATASET_PARAMS:
     data_root = './data'
     dataType = 'train2017'  # dataType: 'train2017' or 'val2017'
@@ -31,7 +37,7 @@ class PRETRAIN_DATASET_PARAMS:
     
     # DataLoader
     batch_size = 64
-    shuffle = False
+    shuffle = True
     num_workers = 0
     # WARN: when n_workers > 0, DataLoader will work slowly due to unknow reasons.
     
