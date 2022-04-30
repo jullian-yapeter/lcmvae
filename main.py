@@ -1,9 +1,7 @@
-from models.basic_models.linear import Encoder, Decoder
+from models.basic_models.conv import ConvDecoder768
 from models.lcmvae import LCMVAE
-from models.heads import ConvDecoder512
-from models.params import LCMVAE_PARAMS as LCMVAEP, VAE_PARAMS as VAEP
 from models.standalone_vae import StandaloneVAE
-from models.params import CONV_DECODER_512_PARAMS as CD512P
+from models.params import LCMVAE_PARAMS as LCMVAEP
 from models.params import STANDALONE_VAE_PARAMS as SVAEP
 from train import Trainer
 from test import Tester
@@ -11,7 +9,7 @@ from params import PRETRAIN_PARAMS as PTP
 from params import PRETEST_PARAMS as PTEP
 from params import TRAIN_PARAMS as TP
 from params import TEST_PARAMS as TEP
-from utils import load_checkpoint, denormalize_torch_to_cv2
+from utils import denormalize_torch_to_cv2, count_parameters
 from params import PRETRAIN_DATASET_PARAMS
 
 import cv2
@@ -33,7 +31,7 @@ def main():
 
     pretrain = True
     pretest = False
-    train = True
+    train = False
     test = False
 
 
@@ -51,7 +49,7 @@ def main():
             "from utils import has_internet\n"
             "import math, torch, torch.nn as nn\n\n")
         lines = map(inspect.getsource, [
-            PTP, PTEP, TP, TEP, VAEP, LCMVAEP, CD512P, PRETRAIN_DATASET_PARAMS])
+            PTP, PTEP, TP, TEP, LCMVAEP, PRETRAIN_DATASET_PARAMS])
         f.write('\n\n'.join(lines))
 
     # # Construct Dataset
@@ -81,8 +79,7 @@ def main():
     
     # Build Dataloader for pretrain
     data_loader = DataLoader(dataset = coco_val2017, 
-                             batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
-                             # batch_size=2,
+                             batch_size=PRETRAIN_DATASET_PARAMS.batch_size,
                              shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
                              num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
@@ -100,20 +97,32 @@ def main():
     
     lcmvae = LCMVAE(LCMVAEP, device=device)
     # svae = StandaloneVAE(SVAEP, device=device)
+
+    count_parameters(lcmvae)
+
     if pretrain:
         pretrainer = Trainer(lcmvae, PTP, experiment_name = experiment_name+"_pretrain", save_dir=save_dir)
         pretrainer.run(data=data_loader)
 
     if pretest:
-        # lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
-        encoder = Encoder(LCMVAEP.vae_params.encoder_params)
-        decoder = Decoder(LCMVAEP.vae_params.decoder_params)
-        load_checkpoint(encoder, name=experiment_name+"_pretrain", save_dir=save_dir)
-        load_checkpoint(decoder, name=experiment_name+"_pretrain", save_dir=save_dir)
-        lcmvae.vae.encoder = encoder
-        lcmvae.vae.decoder = decoder
-        # svae.encoder = encoder
-        # svae.decoder = encoder
+        # # For loading modules separately
+        # vit_model = torch.load(f"saved_models/vit_model_{experiment_name+'_pretrain'}")
+        # bert_model = torch.load(
+        #     f"saved_models/bert_model_{experiment_name+'_pretrain'}")
+        # encoder = Encoder(LCMVAEP.vae_params.encoder_params)
+        # if LCMVAEP.vae_params.use_linear_decoder:
+        #     decoder = Decoder(LCMVAEP.vae_params.decoder_params)
+        # else:
+        #     decoder = ConvDecoder768(LCMVAEP.vae_params.embed_dim)
+        # load_checkpoint(encoder, name=experiment_name+"_pretrain")
+        # load_checkpoint(decoder, name=experiment_name+"_pretrain")
+        # lcmvae.vae.encoder = encoder
+        # lcmvae.vae.decoder = decoder
+        # lcmvae.im_cap_encoder.vit.model = vit_model
+        # lcmvae.im_cap_encoder.bert.model = bert_model
+
+        lcmvae = torch.load(
+            f"saved_models/lcmvae_{experiment_name+'_pretrain'}").eval()
 
         tester = Tester(
             lcmvae, PTEP, experiment_name = experiment_name+"_pretest", save_dir=save_dir)
@@ -129,34 +138,26 @@ def main():
         cv2.imwrite(f"{save_dir}/{experiment_name}.jpg", prediction)
 
     if train:
-        lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
-        encoder = Encoder(LCMVAEP.vae_params.encoder_params)
-        decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name = experiment_name+"_pretrain", save_dir=save_dir)
-        lcmvae.vae.encoder = encoder
+        lcmvae = torch.load(
+            f"saved_models/lcmvae_{experiment_name+'_pretrain'}")
+        decoder = ConvDecoder768(lcmvae.config.embed_dim, out_channels=10, device=device)
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
         trainer = Trainer(lcmvae, TP, experiment_name = experiment_name+"_train", downstream_criterion=criterion, save_dir=save_dir)
         trainer.run(data=data_loader)
 
     if test:
-        lcmvae.im_cap_encoder.vit.model.config.mask_ratio = 0
-        encoder = Encoder(LCMVAEP.vae_params.encoder_params)
-        decoder = ConvDecoder512(CD512P)
-        load_checkpoint(encoder, name=experiment_name+"_train", save_dir=save_dir)
-        load_checkpoint(decoder, name=experiment_name+"_train", save_dir=save_dir)
-        lcmvae.vae.encoder = encoder
-        lcmvae.vae.decoder = decoder
+        lcmvae = torch.load(
+            f"saved_models/lcmvae_{experiment_name+'_train'}")
         criterion = nn.CrossEntropyLoss(reduction="sum")
 
         tester = Tester(
-            lcmvae, PTEP, experiment_name = experiment_name+"_test", downstream_criterion=criterion, save_dir=save_dir)
+            lcmvae, TEP, experiment_name=experiment_name+"_test", downstream_criterion=criterion)
         tester.run(data=data_loader)
 
         im, (cap, seg) = coco_val2017[0]
         reconstruction, mask = lcmvae.run(im[None], [cap])
         prediction = torch.argmax(reconstruction, dim=0)
-        print(mask)
         print(prediction.shape)
         print(f"Actual classes: {torch.unique(seg)}")
         print(f"Predicted classes: {torch.unique(prediction)}")

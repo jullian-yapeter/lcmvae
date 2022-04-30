@@ -6,6 +6,7 @@ import torch.nn as nn
 
 class VAE_PARAMS:
     checkpoint_file = "vae"
+    use_linear_decoder = True
     embed_dim = 768
     im_dims = (3, 224, 224)
 
@@ -33,22 +34,56 @@ class VAE_PARAMS:
     ]
 
 
+class LATENT_RECONSTRUCTOR_PARAMS:
+    checkpoint_file = "latent_reconstructor"
+    embed_dim = 768
+
+    decoder_params = LINEAR_NETWORK_PARAMS()
+    decoder_params.output_dim = embed_dim
+    decoder_params.activation = nn.LeakyReLU()
+    decoder_params.linear_layer_params = [
+        {"in_dim": embed_dim, "out_dim": 768},
+        {"in_dim": 768, "out_dim": decoder_params.output_dim},
+    ]
+
 class CONV_VAE_PARAMS:
     checkpoint_file = "conv_vae"
-    embed_dim = 512
+    use_linear_decoder = False
+    use_epsilon = False
+    use_pre_conv_layer = False
+    embed_dim = 768
     im_dims = (3, 224, 224)
 
     encoder_params = LINEAR_NETWORK_PARAMS()
     encoder_params.output_dim = embed_dim * 2
     encoder_params.activation = nn.LeakyReLU()
     encoder_params.linear_layer_params = [
-        {"in_dim": 1536, "out_dim": 1024},
-        {"in_dim": 1024, "out_dim": 512},
-        {"in_dim": 512, "out_dim": 512},
-        {"in_dim": 512, "out_dim": 512},
-        {"in_dim": 512, "out_dim": encoder_params.output_dim}
+        {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 768},
+        {"in_dim": 768, "out_dim": encoder_params.output_dim}
     ]
-    ## TODO: Add decoder params for hidden units/channells
+
+
+class CONV_VAE_BIG_PARAMS:
+    checkpoint_file = "conv_vae_big"
+    use_linear_decoder = False
+    use_epsilon = False
+    use_pre_conv_layer = False
+    embed_dim = 768
+    im_dims = (3, 224, 224)
+
+    encoder_params = LINEAR_NETWORK_PARAMS()
+    encoder_params.output_dim = embed_dim * 2
+    encoder_params.activation = nn.LeakyReLU()
+    encoder_params.linear_layer_params = [
+        {"in_dim": (196+1)*768, "out_dim": 3072},
+        {"in_dim": 3072, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": encoder_params.output_dim}
+    ]
 
 
 # class SMALL_VAE_PARAMS:
@@ -87,11 +122,22 @@ class CD512P:
 
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
-    is_mae = True
-    mask_ratio = 0.75
-    vae_params = VAE_PARAMS() #SMALL_VAE_PARAMS()
-    no_caption = False
+    embed_dim = 768
+    use_latent_regularizer = True
     use_epsilon = True
+    use_pre_conv_layer = True
+    is_mae = True
+    no_caption = False
+    mae_mode = "all" if use_pre_conv_layer else "mean"
+
+    mask_ratio = 0.0
+    vae_params = CONV_VAE_PARAMS()  #CONV_VAE_BIG_PARAMS() #VAE_PARAMS()
+    vae_params.embed_dim = embed_dim
+    vae_params.use_epsilon = use_epsilon
+    vae_params.use_pre_conv_layer = use_pre_conv_layer
+
+    latent_reconstructor_params = LATENT_RECONSTRUCTOR_PARAMS()
+
 
 class CAPTIONLESS_LCMVAE_PARAMS:
     checkpoint_file = "captionless_lcmvae"

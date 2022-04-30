@@ -6,7 +6,24 @@ from torch.utils.data import random_split
 import os
 import http.client as httplib
 
-def save_checkpoint(model, name=None, save_dir=None):
+from prettytable import PrettyTable
+
+
+def count_parameters(model):
+    table = PrettyTable(["Modules", "Parameters"])
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        param = parameter.numel()
+        table.add_row([name, param])
+        total_params += param
+    print(table)
+    print(f"Total Trainable Params: {total_params}")
+    return total_params
+
+
+def save_checkpoint(model, checkpoint_file=None, name=None):
     # automatically create saved_models folder
     try:
         os.mkdir('saved_models')
@@ -14,11 +31,26 @@ def save_checkpoint(model, name=None, save_dir=None):
     except FileExistsError:
         pass
     
-    save_dir = save_dir if save_dir is not None else 'saved_models'
+    checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
     if name is not None:
-        torch.save(model.state_dict(), f"{save_dir}/{model.checkpoint_file}_{name}")
+        torch.save(model.state_dict(), f"saved_models/{checkpoint_file}_{name}")
     else:
-        torch.save(model.state_dict(), f"{save_dir}/{model.checkpoint_file}")
+        torch.save(model.state_dict(), f"saved_models/{checkpoint_file}")
+
+
+def save_model(model, checkpoint_file=None, name=None):
+    # automatically create saved_models folder
+    try:
+        os.mkdir('saved_models')
+        print("Directory ", 'saved_models',  " Created ")
+    except FileExistsError:
+        pass
+
+    checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
+    if name is not None:
+        torch.save(model, f"saved_models/{checkpoint_file}_{name}")
+    else:
+        torch.save(model, f"saved_models/{checkpoint_file}")
 
 
 def load_checkpoint(model, checkpoint_file=None, name=None, save_dir=None):

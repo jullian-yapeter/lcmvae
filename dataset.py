@@ -173,7 +173,7 @@ class MyCocoCaption(CocoDetection):
         self.feature_extractor =  AutoFeatureExtractor.from_pretrained(self.from_pretrained)
         
     # NOTE: Please choose pick first one caption or combine 5 captions into one. `mode` in ['pick', 'combine']
-    mode = 'pick'  
+    mode = 'combine'
     def _captions2str(self, id: int, mode=mode) -> str:
         if mode not in ['pick', 'combine']:
             raise ValueError(f"mode should be 'pick' or combine, but now is {mode}")
@@ -187,7 +187,8 @@ class MyCocoCaption(CocoDetection):
         # NOTE: constructing AutoFeatureExtractor for each image is pretty slow, leave it outside of _load_image()
         path = self.coco.loadImgs(id)[0]["file_name"]
         raw_img = Image.open(os.path.join(self.root, path)).convert("RGB")
-        encoding = self.feature_extractor(images=raw_img, return_tensors="pt")
+        with torch.no_grad():
+            encoding = self.feature_extractor(images=raw_img, return_tensors="pt")
         
         return encoding['pixel_values'][0]
     
@@ -223,7 +224,7 @@ class MyCocoCaptionDetection(MyCocoCaption):
 
     def __len__(self) -> int:
         return len(self.img_data)
-        # return 2
+        # return 32
 
     def _segment_mask(self, id: int) -> torch.LongTensor:
         ann_ids = self.det.getAnnIds(
