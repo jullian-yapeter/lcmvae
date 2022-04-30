@@ -1,4 +1,4 @@
-from models.basic_models.linear import Decoder
+from models.basic_models.linear import LinearNetwork, Decoder
 
 import torch
 import torch.nn as nn
@@ -62,3 +62,10 @@ class ConvDecoder512(nn.Module):
 
   def forward(self, x):
     return self.net(self.map(x).reshape(-1, 512, 1, 1))
+
+
+class LatentReconstructor(LinearNetwork):
+    def __init__(self, latent_reconstructor_params, device=None):
+        super(LatentReconstructor, self).__init__(
+            latent_reconstructor_params.decoder_params, device=device)
+        self.checkpoint_file = latent_reconstructor_params.checkpoint_file
