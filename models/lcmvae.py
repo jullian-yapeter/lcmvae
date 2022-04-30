@@ -1,6 +1,6 @@
 from models.frozen_transformers import ImageCaptionEncoder
 from models.vae import VAE
-from models.basic_models.linear import Encoder
+from models.heads import LatentReconstructor
 
 import torch
 import torch.nn as nn
@@ -13,23 +13,47 @@ class LCMVAE(nn.Module):
         self.checkpoint_file = self.config.checkpoint_file
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
-        self.im_cap_encoder = ImageCaptionEncoder(is_mae=self.config.is_mae, mask_ratio=self.config.mask_ratio, no_caption=self.config.no_caption, device=device)
+        self.im_cap_encoder = ImageCaptionEncoder(
+            is_mae=self.config.is_mae,
+            mask_ratio=self.config.mask_ratio,
+            mode=self.config.mae_mode,
+            no_caption=self.config.no_caption,
+            device=device)
         self.vae = VAE(self.config.vae_params, device=device)
         self.vae.apply(LCMVAE._init_vae_weights)
+<<<<<<< HEAD
         
     def forward(self, images, captions):
         use_epsilon = self.config.use_epsilon
+=======
+        if self.config.use_latent_regularizer:
+            self.latent_reconstructor = LatentReconstructor(
+                self.config.latent_reconstructor_params, device=device)
+            self.latent_reconstructor_loss = nn.MSELoss()
+
+    def forward(self, images, captions):
+>>>>>>> e1425eab626d6faaf67ba67a8b114b0e03947c14
         mask = None
         with torch.no_grad():
             if self.config.is_mae:
                 im_cap_embedding, mask = self.im_cap_encoder.forward(images, captions)
             else:
                 im_cap_embedding = self.im_cap_encoder.forward(images, captions)
-        vae_outputs = self.vae(im_cap_embedding, use_epsilon=use_epsilon)
+        language_embedding = im_cap_embedding[:, -self.config.embed_dim:]
+        vae_outputs = self.vae(im_cap_embedding)
+        if self.config.use_latent_regularizer:
+            latent_reconstruction = self.latent_reconstructor(vae_outputs["z"])
+            vae_outputs.update(
+                {"latent_reconstruction": latent_reconstruction, "latent_target": language_embedding})
         return vae_outputs, mask
 
-    def loss(self, vae_outputs, target_images, beta):
-        return self.vae.loss(vae_outputs, target_images, beta)
+    def loss(self, vae_outputs, target_images, beta, delta=None):
+        vae_loss = self.vae.loss(vae_outputs, target_images, beta)
+        if self.config.use_latent_regularizer:
+            latent_reconstruction_loss = self.latent_reconstructor_loss(
+                vae_outputs["latent_reconstruction"], vae_outputs["latent_target"])
+            return vae_loss[0] + delta * latent_reconstruction_loss, *vae_loss[1:], latent_reconstruction_loss
+        return vae_loss
 
     def reconstruct(self, images, captions):
         mask = None
