@@ -66,7 +66,7 @@ class PreConvLayer(nn.Module):
   def forward(self, x):
     language_embedding = x[:, -self.embed_dim:]
     image_embedding_temp = x[:, :-self.embed_dim]
-    image_embedding = torch.zeros((image_embedding_temp.shape[0], 196*768))
+    image_embedding = torch.zeros((image_embedding_temp.shape[0], 196*768), device=self.device)
     image_embedding[:, :image_embedding_temp.shape[1]] = image_embedding_temp
     image_embedding = image_embedding.reshape(
         image_embedding.shape[0], -1, self.embed_dim).permute(0, 2, 1)
