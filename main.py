@@ -3,6 +3,8 @@ from models.lcmvae import LCMVAE
 from models.standalone_vae import StandaloneVAE
 from models.params import LCMVAE_PARAMS as LCMVAEP
 from models.params import STANDALONE_VAE_PARAMS as SVAEP
+from models.params import CONV_VAE_PARAMS
+from models.basic_models.params import LINEAR_NETWORK_PARAMS as LINEARP
 from train import Trainer
 from test import Tester
 from params import PRETRAIN_PARAMS as PTP
@@ -49,7 +51,7 @@ def main():
             "from utils import has_internet\n"
             "import math, torch, torch.nn as nn\n\n")
         lines = map(inspect.getsource, [
-            PTP, PTEP, TP, TEP, LCMVAEP, PRETRAIN_DATASET_PARAMS])
+            PTP, PTEP, TP, TEP, LINEARP, CONV_VAE_PARAMS, LCMVAEP,  PRETRAIN_DATASET_PARAMS])
         f.write('\n\n'.join(lines))
 
     # # Construct Dataset
