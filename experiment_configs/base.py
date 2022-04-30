@@ -3,13 +3,13 @@ import math, torch.nn as nn
 from utils import has_internet
 
 class PRETRAIN_PARAMS:
-    epochs = 1000
+    epochs = 300
     learning_rate = 2e-4
     beta = 50
     delta = 5e4
 
 class TRAIN_PARAMS:
-    epochs = 200
+    epochs = 100
     learning_rate = 2e-4
     beta = 0
 

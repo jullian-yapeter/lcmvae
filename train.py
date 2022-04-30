@@ -77,6 +77,17 @@ class Trainer():
                         ax1 = plt.subplot(111)
                         ax1.plot(total_losses)
                         ax1.title.set_text("Total Loss")
+                    elif self.lcmvae.config.use_latent_regularizer:
+                        fig, ax = plt.subplots(2, 2)
+                        ax[0, 0].plot(total_losses)
+                        ax[0, 0].title.set_text("Total Loss")
+                        ax[0, 1].plot(rec_losses)
+                        ax[0, 1].title.set_text("Reconstruction Loss")
+                        ax[1, 0].plot(kl_losses)
+                        ax[1, 0].title.set_text("KL Loss")
+                        ax[1, 1].plot(lat_rec_losses)
+                        ax[1, 1].title.set_text("Latent Reconstruction Loss")
+                        fig.tight_layout()
                     else:
                         ax1 = plt.subplot(131)
                         ax1.plot(total_losses)
@@ -131,7 +142,7 @@ class Trainer():
             ax3 = plt.subplot(133)
             ax3.plot(kl_losses)
             ax3.title.set_text("KL Loss")
-        plt.savefig(f"output/{self.name}_plot.jpg")
+        plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
 
 
 # class Trainer():
