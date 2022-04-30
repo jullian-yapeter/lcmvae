@@ -17,7 +17,7 @@ class LCMVAE(nn.Module):
             is_mae=self.config.is_mae,
             mask_ratio=self.config.mask_ratio,
             mode=self.config.mae_mode,
-            no_caption=self.config.no_caption,
+            use_caption=self.config.use_caption,
             device=device)
         self.vae = VAE(self.config.vae_params, device=device)
         self.vae.apply(LCMVAE._init_vae_weights)

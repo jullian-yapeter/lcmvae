@@ -18,12 +18,12 @@ from test import Tester
 if len(sys.argv) > 1:
     print("Loading params from ", sys.argv[1])
     import importlib
-    params_module = sys.argv[1].replace('/', '.')
+    params_module = sys.argv[1].replace('/', '.').replace('.py', '')
     params = importlib.import_module(params_module)
     LCMVAEP = params.LCMVAE_PARAMS
     SVAEP = params.STANDALONE_VAE_PARAMS
     CONV_VAE_PARAMS = params.CONV_VAE_PARAMS
-    LINEARP = params.LINEAR_NETWORK_PARAMS
+    LATENT_REC_PARAMS = params.LATENT_RECONSTRUCTOR_PARAMS 
     PTP = params.PRETRAIN_PARAMS
     PTEP = params.PRETEST_PARAMS
     TP = params.TRAIN_PARAMS
@@ -31,9 +31,9 @@ if len(sys.argv) > 1:
     PRETRAIN_DATASET_PARAMS = params.PRETRAIN_DATASET_PARAMS
 else:
     from models.params import LCMVAE_PARAMS as LCMVAEP
+    from models.params import LATENT_RECONSTRUCTOR_PARAMS as LATENT_REC_PARAMS
     from models.params import STANDALONE_VAE_PARAMS as SVAEP
     from models.params import CONV_VAE_PARAMS
-    from models.basic_models.params import LINEAR_NETWORK_PARAMS as LINEARP
     from params import PRETRAIN_PARAMS as PTP
     from params import PRETEST_PARAMS as PTEP
     from params import TRAIN_PARAMS as TP
@@ -43,7 +43,9 @@ else:
 from utils import denormalize_torch_to_cv2, count_parameters
 
 def main():
-    experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
+    experiment_name = "sample_run" \
+        if len(sys.argv) == 1 else os.path.basename(sys.argv[1].split('.')[0]) 
+    experiment_name += time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
     pretrain = True
     pretest = False
@@ -65,7 +67,7 @@ def main():
             "from utils import has_internet\n"
             "import math, torch, torch.nn as nn\n\n")
         lines = map(inspect.getsource, [
-            PTP, PTEP, TP, TEP, LINEARP, CONV_VAE_PARAMS, LCMVAEP,  PRETRAIN_DATASET_PARAMS])
+            PTP, PTEP, TP, TEP, PRETRAIN_DATASET_PARAMS, CONV_VAE_PARAMS, LATENT_REC_PARAMS, LCMVAEP, SVAEP])
         f.write('\n\n'.join(lines))
 
     # # Construct Dataset
