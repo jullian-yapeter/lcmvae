@@ -36,7 +36,7 @@ class PRETRAIN_DATASET_PARAMS:
         if has_internet() else './saved_models/ViTMAE'
     
     # DataLoader
-    batch_size = 64
+    batch_size = 256
     shuffle = True
     num_workers = 0
     # WARN: when n_workers > 0, DataLoader will work slowly due to unknow reasons.
