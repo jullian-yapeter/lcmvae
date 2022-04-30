@@ -59,7 +59,6 @@ class CONV_VAE_PARAMS:
         {"in_dim": 768, "out_dim": encoder_params.output_dim}
     ]
 
-
 class LATENT_RECONSTRUCTOR_PARAMS:
     checkpoint_file = "latent_reconstructor"
     embed_dim = 768
@@ -80,7 +79,7 @@ class LCMVAE_PARAMS:
     use_epsilon = True
     use_pre_conv_layer = True
     is_mae = True
-    no_caption = False
+    use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
     mask_ratio = 0.0

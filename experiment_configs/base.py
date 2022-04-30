@@ -3,9 +3,9 @@ import math, torch.nn as nn
 from utils import has_internet
 
 class PRETRAIN_PARAMS:
-    epochs = 200
+    epochs = 1000
     learning_rate = 2e-4
-    beta = 5e1
+    beta = 50
     delta = 5e4
 
 class TRAIN_PARAMS:
@@ -77,12 +77,12 @@ class LCMVAE_PARAMS:
     embed_dim = 768
     use_latent_regularizer = True
     use_epsilon = True
-    use_pre_conv_layer = False
+    use_pre_conv_layer = True
     is_mae = True
-    use_caption = False
+    use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
-    mask_ratio = 0.0
+    mask_ratio = 0.75
     vae_params = CONV_VAE_PARAMS()  #CONV_VAE_BIG_PARAMS() #VAE_PARAMS()
     vae_params.embed_dim = embed_dim
     vae_params.use_epsilon = use_epsilon
