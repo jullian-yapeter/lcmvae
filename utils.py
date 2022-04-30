@@ -23,7 +23,7 @@ def count_parameters(model):
     return total_params
 
 
-def save_checkpoint(model, checkpoint_file=None, name=None):
+def save_checkpoint(model, checkpoint_file=None, name=None, save_dir="saved_models"):
     # automatically create saved_models folder
     try:
         os.mkdir('saved_models')
@@ -33,12 +33,12 @@ def save_checkpoint(model, checkpoint_file=None, name=None):
     
     checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
     if name is not None:
-        torch.save(model.state_dict(), f"saved_models/{checkpoint_file}_{name}")
+        torch.save(model.state_dict(), f"{save_dir}/{checkpoint_file}_{name}")
     else:
-        torch.save(model.state_dict(), f"saved_models/{checkpoint_file}")
+        torch.save(model.state_dict(), f"{save_dir}/{checkpoint_file}")
 
 
-def save_model(model, checkpoint_file=None, name=None):
+def save_model(model, checkpoint_file=None, name=None, save_dir="saved_models"):
     # automatically create saved_models folder
     try:
         os.mkdir('saved_models')
@@ -48,9 +48,9 @@ def save_model(model, checkpoint_file=None, name=None):
 
     checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
     if name is not None:
-        torch.save(model, f"saved_models/{checkpoint_file}_{name}")
+        torch.save(model, f"{save_dir}/{checkpoint_file}_{name}")
     else:
-        torch.save(model, f"saved_models/{checkpoint_file}")
+        torch.save(model, f"{save_dir}/{checkpoint_file}")
 
 
 def load_checkpoint(model, checkpoint_file=None, name=None, save_dir=None):

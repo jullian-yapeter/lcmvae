@@ -8,7 +8,7 @@ from tqdm import tqdm
 
 
 class Trainer():
-    def __init__(self, lcmvae, PTP, experiment_name=None, downstream_criterion=None, save_dir=None):
+    def __init__(self, lcmvae, PTP, experiment_name=None, downstream_criterion=None, save_dir="saved_models"):
         self.save_dir = save_dir
         self.config = PTP
         self.name = experiment_name
@@ -68,7 +68,7 @@ class Trainer():
                     # if self.lcmvae.config.use_pre_conv_layer:
                     #     save_checkpoint(
                     #         self.lcmvae.vae.im_embed_pre_conv, name=self.name)
-                    save_model(self.lcmvae, name=self.name)
+                    save_model(self.lcmvae, name=self.name, save_dir=self.save_dir)
                     best_loss = new_loss
                 if train_it % 500 == 0:
                     # log the loss training curves
