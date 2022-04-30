@@ -1,36 +1,50 @@
+import sys, os, inspect, time
+import numpy as np
+import matplotlib.pyplot as plt
+import cv2
+from PIL import Image
+
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
+from dataset import MyCocoCaption, MyCocoCaptionDetection
+
 from models.basic_models.conv import ConvDecoder768
 from models.lcmvae import LCMVAE
 from models.standalone_vae import StandaloneVAE
-from models.params import LCMVAE_PARAMS as LCMVAEP
-from models.params import STANDALONE_VAE_PARAMS as SVAEP
-from models.params import CONV_VAE_PARAMS
-from models.basic_models.params import LINEAR_NETWORK_PARAMS as LINEARP
 from train import Trainer
 from test import Tester
-from params import PRETRAIN_PARAMS as PTP
-from params import PRETEST_PARAMS as PTEP
-from params import TRAIN_PARAMS as TP
-from params import TEST_PARAMS as TEP
+
+if len(sys.argv) > 1:
+    print("Loading params from ", sys.argv[1])
+    import importlib
+    params_module = sys.argv[1].replace('/', '.')
+    params = importlib.import_module(params_module)
+    LCMVAEP = params.LCMVAE_PARAMS
+    SVAEP = params.STANDALONE_VAE_PARAMS
+    CONV_VAE_PARAMS = params.CONV_VAE_PARAMS
+    LINEARP = params.LINEAR_NETWORK_PARAMS
+    PTP = params.PRETRAIN_PARAMS
+    PTEP = params.PRETEST_PARAMS
+    TP = params.TRAIN_PARAMS
+    TEP = params.TEST_PARAMS
+    PRETRAIN_DATASET_PARAMS = params.PRETRAIN_DATASET_PARAMS
+else:
+    from models.params import LCMVAE_PARAMS as LCMVAEP
+    from models.params import STANDALONE_VAE_PARAMS as SVAEP
+    from models.params import CONV_VAE_PARAMS
+    from models.basic_models.params import LINEAR_NETWORK_PARAMS as LINEARP
+    from params import PRETRAIN_PARAMS as PTP
+    from params import PRETEST_PARAMS as PTEP
+    from params import TRAIN_PARAMS as TP
+    from params import TEST_PARAMS as TEP
+    from params import PRETRAIN_DATASET_PARAMS
+    
 from utils import denormalize_torch_to_cv2, count_parameters
-from params import PRETRAIN_DATASET_PARAMS
-
-import cv2
-import torch
-import torch.nn as nn
-import matplotlib.pyplot as plt
-import numpy as np
-
-from PIL import Image
-import numpy as np
-
-from torch.utils.data import DataLoader
-from dataset import MyCocoCaption, MyCocoCaptionDetection
-import sys, os, inspect, time
 
 def main():
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
-
     pretrain = True
     pretest = False
     train = False
