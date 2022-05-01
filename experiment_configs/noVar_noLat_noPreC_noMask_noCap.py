@@ -79,7 +79,7 @@ class LCMVAE_PARAMS:
     use_epsilon = False
     use_pre_conv_layer = False
     is_mae = True
-    use_caption = True
+    use_caption = False
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
     mask_ratio = 0.0
