@@ -23,7 +23,7 @@ def count_parameters(model):
     return total_params
 
 
-def save_checkpoint(model, checkpoint_file=None, name=None):
+def save_checkpoint(model, checkpoint_file=None, name=None, save_dir="saved_models"):
     # automatically create saved_models folder
     try:
         os.mkdir('saved_models')
@@ -33,12 +33,12 @@ def save_checkpoint(model, checkpoint_file=None, name=None):
     
     checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
     if name is not None:
-        torch.save(model.state_dict(), f"saved_models/{checkpoint_file}_{name}")
+        torch.save(model.state_dict(), f"{save_dir}/{checkpoint_file}_{name}")
     else:
-        torch.save(model.state_dict(), f"saved_models/{checkpoint_file}")
+        torch.save(model.state_dict(), f"{save_dir}/{checkpoint_file}")
 
 
-def save_model(model, checkpoint_file=None, name=None):
+def save_model(model, checkpoint_file=None, name=None, save_dir="saved_models"):
     # automatically create saved_models folder
     try:
         os.mkdir('saved_models')
@@ -48,25 +48,26 @@ def save_model(model, checkpoint_file=None, name=None):
 
     checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
     if name is not None:
-        torch.save(model, f"saved_models/{checkpoint_file}_{name}")
+        torch.save(model, f"{save_dir}/{checkpoint_file}_{name}")
     else:
-        torch.save(model, f"saved_models/{checkpoint_file}")
+        torch.save(model, f"{save_dir}/{checkpoint_file}")
 
 
-def load_checkpoint(model, checkpoint_file=None, name=None):
+def load_checkpoint(model, checkpoint_file=None, name=None, save_dir=None):
     if checkpoint_file:
         model.load_state_dict(
             torch.load(checkpoint_file, map_location=model.device))
         print(f"loaded {checkpoint_file}")
     else:
+        save_dir = save_dir if save_dir is not None else 'saved_models'
         if name is not None:
             model.load_state_dict(
-                torch.load(f"saved_models/{model.checkpoint_file}_{name}", map_location=model.device))
-            print(f"loaded saved_models/{model.checkpoint_file}_{name}")
+                torch.load(f"{save_dir}/{model.checkpoint_file}_{name}", map_location=model.device))
+            print(f"loaded {save_dir}/{model.checkpoint_file}_{name}")
         else:
             model.load_state_dict(
-                torch.load(f"saved_models/{model.checkpoint_file}", map_location=model.device))
-            print(f"loaded saved_models/{model.checkpoint_file}")
+                torch.load(f"{save_dir}/{model.checkpoint_file}", map_location=model.device))
+            print(f"loaded {save_dir}/{model.checkpoint_file}")
 
 def log_losses(losses, name):
     loss_log = {}
@@ -122,4 +123,4 @@ def rand_split(dataset, train_ratio=0.7, seed=None):
 
 def denormalize_torch_to_cv2(im, mean, std):
     im = im.permute(1, 2, 0) * std + mean
-    return torch.clip(im * 255, 0, 255).int().detach().numpy()[:, :, ::-1]
+    return torch.clip(im * 255, 0, 255).int().cpu().detach().numpy()[:, :, ::-1]
