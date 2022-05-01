@@ -28,10 +28,10 @@ class Trainer():
         total_losses = []
         if not self.downstream_criterion:
             rec_losses, kl_losses, lat_rec_losses = [], [], []
-        for ep in tqdm(range(self.config.epochs)):
+        for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             batch_i = 0
-            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}", mininterval=10):
+            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"Epoch {ep}", mininterval=10):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
@@ -70,7 +70,7 @@ class Trainer():
                     #         self.lcmvae.vae.im_embed_pre_conv, name=self.name)
                     save_model(self.lcmvae, name=self.name, save_dir=self.save_dir)
                     best_loss = new_loss
-                if train_it % 500 == 0:
+                if train_it % 200 == 0:
                     # log the loss training curves
                     plt.figure(figsize=(15, 5))
                     if self.downstream_criterion:
@@ -99,6 +99,7 @@ class Trainer():
                         ax3.plot(kl_losses)
                         ax3.title.set_text("KL Loss")
                     plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+                    plt.clf()
                     if self.downstream_criterion:
                         print(
                             f"It {train_it}: Total Loss: {total_loss.cpu().detach()}"
@@ -143,6 +144,7 @@ class Trainer():
             ax3.plot(kl_losses)
             ax3.title.set_text("KL Loss")
         plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+        plt.clf()
 
 
 # class Trainer():

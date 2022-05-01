@@ -14,31 +14,28 @@ from models.lcmvae import LCMVAE
 from models.standalone_vae import StandaloneVAE
 from train import Trainer
 from test import Tester
+from params import PRETRAIN_PARAMS as PTP
+from params import PRETEST_PARAMS as PTEP
+from params import TRAIN_PARAMS as TP
+from params import TEST_PARAMS as TEP
+from params import PRETRAIN_DATASET_PARAMS
 
 if len(sys.argv) > 1:
     print("Loading params from ", sys.argv[1])
     import importlib
-    params_module = sys.argv[1].replace('/', '.').replace('.py', '')
-    params = importlib.import_module(params_module)
-    LCMVAEP = params.LCMVAE_PARAMS
-    SVAEP = params.STANDALONE_VAE_PARAMS
-    CONV_VAE_PARAMS = params.CONV_VAE_PARAMS
-    LATENT_REC_PARAMS = params.LATENT_RECONSTRUCTOR_PARAMS 
-    PTP = params.PRETRAIN_PARAMS
-    PTEP = params.PRETEST_PARAMS
-    TP = params.TRAIN_PARAMS
-    TEP = params.TEST_PARAMS
-    PRETRAIN_DATASET_PARAMS = params.PRETRAIN_DATASET_PARAMS
+    mod_params_module = sys.argv[1].replace('/', '.').replace('.py', '')
+    mod_params_ = importlib.import_module(mod_params_module)
+    LCMVAEP = mod_params_.LCMVAE_PARAMS
+    SVAEP = mod_params_.STANDALONE_VAE_PARAMS
+    CONV_VAE_PARAMS = mod_params_.CONV_VAE_PARAMS
+    LATENT_REC_PARAMS = mod_params_.LATENT_RECONSTRUCTOR_PARAMS 
+
 else:
     from models.params import LCMVAE_PARAMS as LCMVAEP
     from models.params import LATENT_RECONSTRUCTOR_PARAMS as LATENT_REC_PARAMS
     from models.params import STANDALONE_VAE_PARAMS as SVAEP
     from models.params import CONV_VAE_PARAMS
-    from params import PRETRAIN_PARAMS as PTP
-    from params import PRETEST_PARAMS as PTEP
-    from params import TRAIN_PARAMS as TP
-    from params import TEST_PARAMS as TEP
-    from params import PRETRAIN_DATASET_PARAMS
+
     
 from utils import denormalize_torch_to_cv2, count_parameters
 
