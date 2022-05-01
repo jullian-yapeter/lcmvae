@@ -60,7 +60,7 @@ class Trainer():
                     kl_losses.append(kl_loss.cpu().detach())
                     if self.lcmvae.config.use_latent_regularizer:
                         lat_rec_losses.append(lat_rec_loss.cpu().detach())
-                new_loss = sum(total_losses) / len(total_losses)
+                new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                 if new_loss < best_loss:
                     print(f"\nSaving checkpoint... new best loss: {new_loss}")
                     # # To save the individual components

@@ -2,6 +2,26 @@ from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 import math, torch.nn as nn
 from utils import has_internet
 
+class PRETRAIN_PARAMS:
+    epochs = 80
+    learning_rate = 2e-4
+    beta = 0    
+    delta = 5e4
+
+class TRAIN_PARAMS:
+    epochs = 100
+    learning_rate = 2e-4
+    beta = 0
+
+
+class PRETEST_PARAMS:
+    beta = 0
+
+
+class TEST_PARAMS:
+    beta = 0
+    
+
 class PRETRAIN_DATASET_PARAMS:
     data_root = './data'
     dataType = 'train2017'  # dataType: 'train2017' or 'val2017'
@@ -56,8 +76,8 @@ class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
     embed_dim = 768
     use_latent_regularizer = True
-    use_epsilon = True
-    use_pre_conv_layer = True
+    use_epsilon = False
+    use_pre_conv_layer = False
     is_mae = True
     use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"

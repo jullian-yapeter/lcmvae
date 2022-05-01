@@ -57,7 +57,7 @@ class LCMVAE_PARAMS:
     embed_dim = 768
     use_latent_regularizer = True
     use_epsilon = True
-    use_pre_conv_layer = True
+    use_pre_conv_layer = False
     is_mae = True
     use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"
