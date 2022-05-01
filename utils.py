@@ -123,4 +123,4 @@ def rand_split(dataset, train_ratio=0.7, seed=None):
 
 def denormalize_torch_to_cv2(im, mean, std):
     im = im.permute(1, 2, 0) * std + mean
-    return torch.clip(im * 255, 0, 255).int().detach().numpy()[:, :, ::-1]
+    return torch.clip(im * 255, 0, 255).int().cpu().detach().numpy()[:, :, ::-1]
