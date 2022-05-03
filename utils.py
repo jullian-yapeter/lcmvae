@@ -12,6 +12,8 @@ from PIL import Image
 import requests
 import matplotlib.pyplot as plt
 
+from masks import PixelMask, PatchMask
+
 
 def count_parameters(model):
     table = PrettyTable(["Modules", "Parameters"])
@@ -177,7 +179,7 @@ def mae_show_one_image(img_inputs, pixel_mask, pixel_pred):
     plt.show()
     
     
-def run_one_img(url='', img_path='', model=None, verbose=True):
+def mae_run_one_img(url='', img_path='', model=None, verbose=True):
     assert (url!='' or img_path!=""), "please input an image url or local path"
     assert model != None, "please set `model`"
     
@@ -218,3 +220,51 @@ def run_one_img(url='', img_path='', model=None, verbose=True):
     
     mae_show_one_image(img_inputs, pixel_mask, pixel_pred)
 
+
+
+def vae_show_one_image(url='', img_path='', model=None, mask_ratio=0.25, 
+                       patch_size=16, is_patch=True, verbose=True):
+    
+    assert (url!='' or img_path!=""), "please input an image url or local path"
+    # FIXME: figure out which VAE will be used and the its ouput
+    # assert model != None, "please send a VAE `model`"
+    
+    # load image
+    if url != "":
+        image = Image.open(requests.get(url, stream=True).raw)
+    elif img_path != "":
+        image = Image.open(img_path)
+    img_inputs = feature_extractor(images=image, return_tensors="pt")
+    
+    # FIXME: fit the image into VAE for reconstruction
+    # img_outputs = model(img_inputs[0])
+    # reconstruction = img_outputs.reconstruction
+    reconstruction = torch.rand(1,3,224,224)
+    # FIXME: calculate loss here
+    # loss = 
+    # if verbose:
+    #     print("rec_loss:", loss)
+    
+    if is_patch:
+        mask_maker = PatchMask(mask_ratio=mask_ratio, patch_size=patch_size)
+        masked_image, mask = mask_maker(img_inputs.pixel_values)
+    else: # pixel-wise mask
+        mask_maker =  PixelMask(mask_ratio=mask_ratio)
+        masked_image, mask = mask_maker(img_inputs.pixel_values)
+       
+    
+    # make the plt figure larger
+    plt.rcParams['figure.figsize'] = [24, 24]
+    
+    plt.subplot(1, 3, 1) 
+    # the image will be masked in-place, so we load again here to should the original image
+    show_image(feature_extractor(images=image, return_tensors="pt").pixel_values[0], "Original") 
+    
+    
+    plt.subplot(1, 3, 2)  
+    show_image(masked_image[0], f"Masked Image (mask ratio = {mask_ratio})")
+
+    plt.subplot(1, 3, 3) 
+    show_image(reconstruction[0], "Reconstruction")
+    
+    plt.show()

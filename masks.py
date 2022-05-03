@@ -1,5 +1,4 @@
 import torch
-from torch import nn
 
 class PixelMask():
     def __init__(self, mask_ratio):
