@@ -131,7 +131,7 @@ def denormalize_torch_to_cv2(im, mean, std):
 
 
 ########################
-#    visualization     #
+#    Visualization     #
 ########################
 # mean and std values of images for pretrained MAE
 pretrained_model = 'facebook/vit-mae-base'
