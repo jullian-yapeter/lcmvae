@@ -155,7 +155,6 @@ def show_image(img_unpatch, title=''):
 def mae_show_one_image(img_inputs, pixel_mask, pixel_pred):
     # make the plt figure larger
     plt.rcParams['figure.figsize'] = [24, 24]
-    plt.title("Visualization of MAE mask and reconstruction")
     
     plt.subplot(1, 5, 1)
     show_image(img_inputs.pixel_values[0], "original")
@@ -251,8 +250,6 @@ def vae_show_one_image(url='', img_path='', model=None, mask_ratio=0.25,
     
     # make the plt figure larger
     plt.rcParams['figure.figsize'] = [24, 24]
-    
-    plt.title("Visualization of VAE baseline mask and reconstruction")
     
     plt.subplot(1, 3, 1) 
     # NOTE: the image will be masked in-place, so load it again to show the original image
