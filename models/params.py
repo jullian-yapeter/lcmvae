@@ -34,8 +34,6 @@ class VAE_PARAMS:
     ]
 
 
-<<<<<<< HEAD
-=======
 class LATENT_RECONSTRUCTOR_PARAMS:
     checkpoint_file = "latent_reconstructor"
     embed_dim = 768
@@ -48,7 +46,6 @@ class LATENT_RECONSTRUCTOR_PARAMS:
         {"in_dim": 768, "out_dim": decoder_params.output_dim},
     ]
 
->>>>>>> e1425eab626d6faaf67ba67a8b114b0e03947c14
 class CONV_VAE_PARAMS:
     checkpoint_file = "conv_vae"
     use_linear_decoder = False
@@ -89,33 +86,33 @@ class CONV_VAE_BIG_PARAMS:
     ]
 
 
-# class SMALL_VAE_PARAMS:
-#     checkpoint_file = "small_vae"
-#     embed_dim = 256
-#     im_dims = (3, 224, 224)
+class SMALL_VAE_PARAMS:
+    checkpoint_file = "small_vae"
+    embed_dim = 256
+    im_dims = (3, 224, 224)
 
-#     encoder_params = LINEAR_NETWORK_PARAMS()
-#     encoder_params.output_dim = embed_dim * 2
-#     encoder_params.activation = nn.LeakyReLU()
-#     encoder_params.linear_layer_params = [
-#         {"in_dim": 1536, "out_dim": 768},
-#         {"in_dim": 768, "out_dim": 512},
-#         {"in_dim": 512, "out_dim": 256},
-#         {"in_dim": 256, "out_dim": 256},
-#         {"in_dim": 256, "out_dim": encoder_params.output_dim}
-#     ]
+    encoder_params = LINEAR_NETWORK_PARAMS()
+    encoder_params.output_dim = embed_dim * 2
+    encoder_params.activation = nn.LeakyReLU()
+    encoder_params.linear_layer_params = [
+        {"in_dim": 1536, "out_dim": 768},
+        {"in_dim": 768, "out_dim": 512},
+        {"in_dim": 512, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 256},
+        {"in_dim": 256, "out_dim": encoder_params.output_dim}
+    ]
 
-#     decoder_params = DECODER_PARAMS()
-#     decoder_params.im_dims = (3, 224, 224)
-#     decoder_params.linear_params.output_dim = embed_dim
-#     decoder_params.linear_params.activation = nn.LeakyReLU()
-#     decoder_params.linear_params.linear_layer_params = [
-#         {"in_dim": embed_dim, "out_dim": 256},
-#         {"in_dim": 256, "out_dim": 256},
-#         {"in_dim": 256, "out_dim": 256},
-#         {"in_dim": 256, "out_dim": 512},
-#         {"in_dim": 512, "out_dim": math.prod(im_dims)}
-#     ]
+    decoder_params = DECODER_PARAMS()
+    decoder_params.im_dims = (3, 224, 224)
+    decoder_params.linear_params.output_dim = embed_dim
+    decoder_params.linear_params.activation = nn.LeakyReLU()
+    decoder_params.linear_params.linear_layer_params = [
+        {"in_dim": embed_dim, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 256},
+        {"in_dim": 256, "out_dim": 512},
+        {"in_dim": 512, "out_dim": math.prod(im_dims)}
+    ]
 
 
 class CD512P:
@@ -130,13 +127,7 @@ class LCMVAE_PARAMS:
     use_epsilon = True
     use_pre_conv_layer = True
     is_mae = True
-<<<<<<< HEAD
-    mask_ratio = 0.75
-    vae_params = VAE_PARAMS() #SMALL_VAE_PARAMS()
-    no_caption = False
-    use_epsilon = True
-=======
-    no_caption = False
+    use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
     mask_ratio = 0.0
@@ -147,7 +138,6 @@ class LCMVAE_PARAMS:
 
     latent_reconstructor_params = LATENT_RECONSTRUCTOR_PARAMS()
 
->>>>>>> e1425eab626d6faaf67ba67a8b114b0e03947c14
 
 class CAPTIONLESS_LCMVAE_PARAMS:
     checkpoint_file = "captionless_lcmvae"
@@ -165,5 +155,3 @@ class CONV_DECODER_512_PARAMS:
     checkpoint_file = "conv_decoder_512"
     embed_dim = 768
     out_channels = 10
-
-
