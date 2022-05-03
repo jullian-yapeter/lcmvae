@@ -118,7 +118,7 @@ class StandaloneVAE(nn.Module):
 
     def forward(self, x, pretraining=True):
         encoder_out = self.encoder(x)
-        mean = encoder_out[:, :self.embed_dim]
+        mean = encoder_out[:, :self.config.embed_dim]
         log_sigma = encoder_out[:, self.config.embed_dim:]
         reconstruction = None
         if pretraining:
