@@ -7,6 +7,7 @@ import torch.nn as nn
 class VAE_PARAMS:
     checkpoint_file = "vae"
     use_linear_decoder = True
+    use_pre_conv_layer = False
     embed_dim = 768
     im_dims = (3, 224, 224)
 
