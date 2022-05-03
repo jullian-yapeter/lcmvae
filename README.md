@@ -14,6 +14,7 @@ Spring 2022 • University of Southern California
 
 *Midterm results in [OneDrive Folder](https://uscedu-my.sharepoint.com/:f:/g/personal/dongzeye_usc_edu/EmL0By_TtoBPoF_hfKSoAyABpbZ_fDdwc_xDlf6lU64Uvg?e=N8bM0l) (requires USC email)*
 
+[Visualization Demo: Mask and Reconstruction of MAE and VAE baseline](./visualization_demo.ipynb)
 
 Fine-tune MAE
 
@@ -21,4 +22,5 @@ Fine-tune MAE
 # first set params.PRETRAIN_DATASET_PARAMS.dataType = train2017
 python3 mae_ft.py
 ```
+
 

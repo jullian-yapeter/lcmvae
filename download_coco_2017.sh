@@ -17,10 +17,3 @@ wget http://images.cocodataset.org/zips/train2017.zip
 unzip -q -o ./train2017.zip -d $data_dir/$dataset_dir/ # no verbose
 
 rm *.zip*
-
-
-# TODO: Creating a Sufficiently Large Dataset
-# wget http://images.cocodataset.org/zips/train2014.zip
-# wget http://images.cocodataset.org/zips/val2014.zip
-# wget http://images.cocodataset.org/zips/test2014.zip
-# laion-400: dataset for CLIP https://laion.ai/laion-400-open-dataset/
