@@ -223,8 +223,8 @@ class MyCocoCaptionDetection(MyCocoCaption):
         self.resizer = T.Resize((IMG_H, IMG_W))
 
     def __len__(self) -> int:
-        return len(self.img_data)
-        # return 32
+        # return len(self.img_data)
+        return 16
 
     def _segment_mask(self, id: int) -> torch.LongTensor:
         ann_ids = self.det.getAnnIds(

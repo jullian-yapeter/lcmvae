@@ -43,12 +43,22 @@ else:
 from utils import denormalize_torch_to_cv2, count_parameters
 
 def main():
+<<<<<<< Updated upstream
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
     pretrain = True
     pretest = False
     train = False
     test = False
+=======
+    today = date.today()
+    experiment_name = "sample_run" + today.strftime("-%Y-%m-%d")
+    # experiment_name = "trained_experiment_name"
+    pretrain = True
+    pretest = True
+    train = True
+    test = True
+>>>>>>> Stashed changes
 
 
     device = torch.device(
