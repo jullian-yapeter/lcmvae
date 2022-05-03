@@ -80,7 +80,15 @@ class VitMaeEncoder():
             if self.mode == "cls":
                 image_embeddings = self.model(images).last_hidden_state[:, 0, :]
             elif self.mode == "all":
-                image_embeddings = self.model(images)[0][:, 1:]
+                model_output = self.model(images)
+                image_embeddings = model_output[0]
+                ids_restore = model_output.ids_restore
+                mask_tokens = torch.tensor([0] * image_embeddings.shape[2]).repeat(
+                    image_embeddings.shape[0], ids_restore.shape[1] + 1 - image_embeddings.shape[1], 1)
+                x_ = torch.cat(
+                    [image_embeddings[:, 1:, :], mask_tokens], dim=1)
+                image_embeddings = torch.gather(
+                    x_, dim=1, index=ids_restore.unsqueeze(-1).repeat(1, 1, image_embeddings.shape[2]))
                 image_embeddings = image_embeddings.reshape(image_embeddings.shape[0], -1)
             elif self.mode == "mean":
                 image_embeddings = torch.mean(self.model(
