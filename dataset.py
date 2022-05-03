@@ -142,7 +142,6 @@ class MyCocoCaption(CocoDetection):
     _load_image: 
         Images in COCO datasets do not have a uniform shape, so
         reshape each image (3, _, _) -> (3, IMG_W, IMG_H), default IMG_W = IMG_H = 224
-        # NOTE: reshaping images will reduce images' quality, does it okay?
         # NOTE: ViT : resize to 256 -> do center crop to 224 -> transform images to tensor and normalize them. All these step could finished automatically by feature_extractor()
         # [x]: use AutoFeatureExtractor() to reshape images
         
@@ -184,7 +183,6 @@ class MyCocoCaption(CocoDetection):
         return ' '.join(captions)
     
     def _load_image(self, id: int) -> Image.Image:
-        # NOTE: constructing AutoFeatureExtractor for each image is pretty slow, leave it outside of _load_image()
         path = self.coco.loadImgs(id)[0]["file_name"]
         raw_img = Image.open(os.path.join(self.root, path)).convert("RGB")
         with torch.no_grad():
@@ -281,7 +279,6 @@ if __name__ == "__main__":
     batch_size = 512
     shuffle = False
     n_workers = 0
-    # WARN: when n_workers > 0, DataLoader will work slowly due to unknow reasons.
 
     data_loader = DataLoader(coco_val2017, batch_size, shuffle, num_workers=n_workers)
 
