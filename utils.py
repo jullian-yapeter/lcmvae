@@ -1,4 +1,3 @@
-import imp
 import torch
 import json
 from statistics import mean, variance
@@ -7,6 +6,11 @@ import os
 import http.client as httplib
 
 from prettytable import PrettyTable
+
+from transformers import AutoFeatureExtractor, ViTMAEForPreTraining
+from PIL import Image
+import requests
+import matplotlib.pyplot as plt
 
 
 def count_parameters(model):
@@ -124,3 +128,93 @@ def rand_split(dataset, train_ratio=0.7, seed=None):
 def denormalize_torch_to_cv2(im, mean, std):
     im = im.permute(1, 2, 0) * std + mean
     return torch.clip(im * 255, 0, 255).int().cpu().detach().numpy()[:, :, ::-1]
+
+
+########################
+#    visualization     #
+########################
+# mean and std values of images for pretrained MAE
+pretrained_model = 'facebook/vit-mae-base'
+feature_extractor = AutoFeatureExtractor.from_pretrained(pretrained_model)
+# imagenet_mean = np.array([0.485, 0.456, 0.406])
+# imagenet_std = np.array([0.229, 0.224, 0.225])
+imagenet_mean = torch.tensor(feature_extractor.image_mean)
+imagenet_std = torch.tensor(feature_extractor.image_std)
+
+def show_image(img_unpatch, title=''):
+    # image shape is [3, H, W]
+    assert img_unpatch.shape[0] == 3
+    img_show = torch.einsum('chw->hwc',img_unpatch)
+    img_show = torch.clip((img_show * imagenet_std + imagenet_mean) * 255, 0, 255).int()
+    plt.imshow(img_show)
+    plt.title(title, fontsize=16)
+    plt.axis('off')
+    # img_show = img_show.numpy().astype(np.uint8)  ## for fitting the format of .ToPILImage()
+    # return img_show
+    
+def mae_show_one_image(img_inputs, pixel_mask, pixel_pred):
+    # make the plt figure larger
+    plt.rcParams['figure.figsize'] = [24, 24]
+    
+    plt.subplot(1, 5, 1)
+    show_image(img_inputs.pixel_values[0], "original")
+    
+    plt.subplot(1, 5, 2)
+    img_masked = img_inputs.pixel_values * (1 - pixel_mask[0])
+    show_image(pixel_mask[0], "patch mask")
+
+    img_masked = img_inputs.pixel_values * (1 - pixel_mask[0])
+    plt.subplot(1, 5, 3)
+    show_image(img_masked[0], "masked")
+
+    plt.subplot(1, 5, 4)
+    show_image(pixel_pred[0], "reconstruction")
+
+    plt.subplot(1, 5, 5)
+    im_paste = img_inputs.pixel_values[0] * (1 - pixel_mask) + pixel_pred[0] * pixel_mask
+    show_image(im_paste[0], "reconstruction + visible")
+
+    plt.show()
+    
+    
+def run_one_img(url='', img_path='', model=None, verbose=True):
+    assert (url!='' or img_path!=""), "please input an image url or local path"
+    assert model != None, "please set `model`"
+    
+    # load image
+    if url != "":
+        image = Image.open(requests.get(url, stream=True).raw)
+    elif img_path != "":
+        image = Image.open(img_path)
+    img_inputs = feature_extractor(images=image, return_tensors="pt")
+    
+    # fit into the model
+    img_outputs = model(**img_inputs)
+    loss = img_outputs.loss  # tensor(0.3091, grad_fn=<DivBackward0>)
+    if verbose:
+        print("rec_loss:", loss)
+    mask = img_outputs.mask
+    ids_restore = img_outputs.ids_restore
+    # print(img_outputs.logits.size())  # 16*16*3 = 768
+    
+    mask_ratio = model.config.mask_ratio
+    patch_size = model.config.patch_size
+    
+    # pixel-wise mask
+    # patch mask -> unpatch_mask -> pixel mask projection: 
+    # torch.Size([1, 196]) -> torch.Size([1, 196, 768]) -> torch.Size([1, 3, 224, 224])
+    unpatch_mask = mask.unsqueeze(-1).repeat(1, 1, patch_size**2 *3)
+    pixel_mask = model.unpatchify(unpatch_mask) 
+    if verbose:
+        print(f'patch mask -> unpatch_mask -> pixel mask projection: \n{mask.size()} -> {unpatch_mask.size()} -> {pixel_mask.size()}')
+
+    # pixel-wise prediction
+    # pred of decoder -> pixel-wise pred: 
+    # torch.Size([1, 196, 768]) -> torch.Size([1, 3, 224, 224])
+    img_outputs.keys()
+    pixel_pred = model.unpatchify(img_outputs.logits) 
+    if verbose:
+        print(f'pred of decoder -> pixel-wise pred: \n{img_outputs.logits.size()} -> {pixel_pred.size()}')
+    
+    mae_show_one_image(img_inputs, pixel_mask, pixel_pred)
+
