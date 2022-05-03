@@ -130,7 +130,7 @@ class LCMVAE_PARAMS:
     use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
-    mask_ratio = 0.75
+    mask_ratio = 0.0
     vae_params = CONV_VAE_PARAMS()  #CONV_VAE_BIG_PARAMS() #VAE_PARAMS()
     vae_params.embed_dim = embed_dim
     vae_params.use_epsilon = use_epsilon

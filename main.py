@@ -46,9 +46,9 @@ def main():
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
     pretrain = True
-    pretest = True
-    train = True
-    test = True
+    pretest = False
+    train = False
+    test = False
 
 
     device = torch.device(
