@@ -28,8 +28,8 @@ class Trainer():
         total_losses, rec_losses, kl_losses, lat_rec_losses = [], [], [], []
 
         for ep in range(self.config.epochs):
-            dataloader = tqdm(data, desc=f"Epoch {ep}", mininterval=5) if has_internet() else data
-            for im_batch, (cap_batch, seg_batch) in dataloader:
+            for im_batch, (cap_batch, seg_batch) in tqdm(
+                data, desc=f"Epoch {ep}", mininterval=5 if has_internet else 25):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
