@@ -5,6 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 from tqdm import tqdm
+
+HAS_INTERNET = has_internet() 
 class Trainer():
     def __init__(self, lcmvae, PTP, experiment_name=None, downstream_criterion=None, save_dir="saved_models"):
         self.save_dir = save_dir
@@ -28,7 +30,7 @@ class Trainer():
         for ep in range(self.config.epochs):
             print(f"Epoch: {ep}\n")
             for im_batch, (cap_batch, seg_batch) in tqdm(
-                data, desc=f"Epoch {ep}", mininterval=5, disable= not has_internet()):
+                data, desc=f"Epoch {ep}", mininterval=5 if HAS_INTERNET else 180):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
