@@ -4,8 +4,9 @@ import torch.nn as nn
 import cv2
 from utils import has_internet
 
-class BertEncoder():
+class BertEncoder(nn.Module):
     def __init__(self, device=None):
+        super().__init__()
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.pretrained_path = 'bert-base-uncased' \
@@ -29,8 +30,9 @@ class BertEncoder():
         return sentence_embeddings
 
 
-class VitEncoder():
+class VitEncoder(nn.Module):
     def __init__(self, device=None):
+        super().__init__()
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.pretrained_path = 'google/vit-base-patch16-224-in21k' \
@@ -52,8 +54,9 @@ class VitEncoder():
         return image_embeddings
 
 
-class VitMaeEncoder():
+class VitMaeEncoder(nn.Module):
     def __init__(self, mask_ratio=0.75, mode="all", device=None):
+        super().__init__()
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.pretrained_path = 'facebook/vit-mae-base' \
@@ -98,8 +101,9 @@ class VitMaeEncoder():
         return image_embeddings, mask
 
 
-class ImageCaptionEncoder():
+class ImageCaptionEncoder(nn.Module):
     def __init__(self, is_mae=True, mask_ratio=0.75, use_caption=True, mode="all", device=None):
+        super().__init__()
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu') if device is None else device
         self.bert = BertEncoder(device=self.device) if use_caption else None
