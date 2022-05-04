@@ -5,7 +5,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 from tqdm import tqdm
-from utils import has_internet
 
 class Trainer():
     def __init__(self, lcmvae, PTP, experiment_name=None, downstream_criterion=None, save_dir="saved_models"):
@@ -29,7 +28,7 @@ class Trainer():
 
         for ep in range(self.config.epochs):
             for im_batch, (cap_batch, seg_batch) in tqdm(
-                data, desc=f"Epoch {ep}", mininterval=5 if has_internet() else 50):
+                data, desc=f"Epoch {ep}", mininterval=50):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
@@ -66,8 +65,7 @@ class Trainer():
                         # if self.lcmvae.config.use_pre_conv_layer:
                         #     save_checkpoint(
                         #         self.lcmvae.vae.im_embed_pre_conv, name=self.name)
-                        if not has_internet():
-                            print('-'*40)
+                        print('-'*40)
                         save_model(self.lcmvae, name=self.name, save_dir=self.save_dir)
                         best_loss = new_loss
                         if self.downstream_criterion:
@@ -82,6 +80,7 @@ class Trainer():
                             print(
                                 f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                             )
+                if train_it % 100 == 0:
                     # log the loss training curves
                     plt.figure(figsize=(15, 5))
                     if self.downstream_criterion:
