@@ -17,6 +17,7 @@ class CONV_VAE_PARAMS:
     encoder_params.linear_layer_params = [
         {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 1536},
+        {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 768},
         {"in_dim": 768, "out_dim": encoder_params.output_dim}
     ]

@@ -1,5 +1,6 @@
 from transformers import BertTokenizer, BertModel, ViTModel, ViTMAEModel
 import torch
+import torch.nn as nn
 import cv2
 from utils import has_internet
 
@@ -69,6 +70,7 @@ class VitMaeEncoder():
         for param in self.model.parameters():
             param.requires_grad = False
         self.hidden_size = self.model.config.hidden_size
+        self.mask_token = nn.Parameter(torch.zeros(1, 1, self.hidden_size, device=self.device))
 
     def forward(self, images):
         # NOTE: feature_extractor was created during building a dataset in PreTrainer 
@@ -83,7 +85,7 @@ class VitMaeEncoder():
                 model_output = self.model(images)
                 image_embeddings = model_output[0]
                 ids_restore = model_output.ids_restore
-                mask_tokens = torch.zeros(image_embeddings.shape[2], device = self.device).repeat(
+                mask_tokens = self.mask_token.repeat(
                     image_embeddings.shape[0], ids_restore.shape[1] + 1 - image_embeddings.shape[1], 1)
                 x_ = torch.cat(
                     [image_embeddings[:, 1:, :], mask_tokens], dim=1)
