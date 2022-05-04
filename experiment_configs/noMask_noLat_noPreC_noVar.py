@@ -5,11 +5,11 @@ from utils import has_internet
 class PRETRAIN_PARAMS:
     epochs = 80
     learning_rate = 2e-4
-    beta = 50
+    beta = 5e1
     delta = 5e4
 
 class TRAIN_PARAMS:
-    epochs = 100
+    epochs = 200
     learning_rate = 2e-4
     beta = 0
 
@@ -76,7 +76,7 @@ class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
     embed_dim = 768
     use_latent_regularizer = False
-    use_epsilon = True
+    use_epsilon = False
     use_pre_conv_layer = False
     is_mae = True
     use_caption = True

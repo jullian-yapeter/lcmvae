@@ -5,11 +5,11 @@ from utils import has_internet
 class PRETRAIN_PARAMS:
     epochs = 80
     learning_rate = 2e-4
-    beta = 0    
+    beta = 5e1
     delta = 5e4
 
 class TRAIN_PARAMS:
-    epochs = 100
+    epochs = 200
     learning_rate = 2e-4
     beta = 0
 
@@ -79,10 +79,10 @@ class LCMVAE_PARAMS:
     use_epsilon = False
     use_pre_conv_layer = False
     is_mae = True
-    use_caption = False
+    use_caption = True
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
-    mask_ratio = 0.75
+    mask_ratio = 0.0
     vae_params = CONV_VAE_PARAMS()  #CONV_VAE_BIG_PARAMS() #VAE_PARAMS()
     vae_params.embed_dim = embed_dim
     vae_params.use_epsilon = use_epsilon

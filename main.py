@@ -110,6 +110,8 @@ def main():
     #     i += 1
     # exit()
     
+    if LCMVAEP.use_caption == False:
+        LCMVAEP.use_latent_regularizer = False
     lcmvae = LCMVAE(LCMVAEP, device=device)
     # svae = StandaloneVAE(SVAEP, device=device)
 

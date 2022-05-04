@@ -2,25 +2,6 @@ from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 import math, torch.nn as nn
 from utils import has_internet
 
-class PRETRAIN_PARAMS:
-    epochs = 80
-    learning_rate = 2e-4
-    beta = 50
-    delta = 5e4
-
-class TRAIN_PARAMS:
-    epochs = 100
-    learning_rate = 2e-4
-    beta = 0
-
-
-class PRETEST_PARAMS:
-    beta = 0
-
-
-class TEST_PARAMS:
-    beta = 0
-    
 
 class PRETRAIN_DATASET_PARAMS:
     data_root = './data'

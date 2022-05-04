@@ -2,7 +2,6 @@ from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 import math, torch.nn as nn
 from utils import has_internet
 
-
 class CONV_VAE_PARAMS:
     checkpoint_file = "conv_vae"
     use_linear_decoder = False
@@ -15,6 +14,7 @@ class CONV_VAE_PARAMS:
     encoder_params.output_dim = embed_dim * 2
     encoder_params.activation = nn.LeakyReLU()
     encoder_params.linear_layer_params = [
+        {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 1536},
         {"in_dim": 1536, "out_dim": 768},
@@ -37,11 +37,11 @@ class LATENT_RECONSTRUCTOR_PARAMS:
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
     embed_dim = 768
-    use_latent_regularizer = True
-    use_epsilon = True
-    use_pre_conv_layer = True
+    use_latent_regularizer = False
+    use_epsilon = False
+    use_pre_conv_layer = False
     is_mae = True
-    use_caption = True
+    use_caption = False
     mae_mode = "all" if use_pre_conv_layer else "mean"
 
     mask_ratio = 0.75

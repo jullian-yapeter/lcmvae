@@ -75,7 +75,7 @@ class LATENT_RECONSTRUCTOR_PARAMS:
 class LCMVAE_PARAMS:
     checkpoint_file = "lcmvae"
     embed_dim = 768
-    use_latent_regularizer = True
+    use_latent_regularizer = False
     use_epsilon = True
     use_pre_conv_layer = True
     is_mae = True
