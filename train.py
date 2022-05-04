@@ -1,6 +1,7 @@
 from utils import save_checkpoint, save_model
 
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import torch
 from tqdm import tqdm
@@ -24,14 +25,11 @@ class Trainer():
     def run(self, data):
         train_it = 0
         best_loss = float('inf')
-        total_losses = []
-        if not self.downstream_criterion:
-            rec_losses, kl_losses, lat_rec_losses = [], [], []
+        total_losses, rec_losses, kl_losses, lat_rec_losses = [], [], [], []
+
         for ep in range(self.config.epochs):
-            print("Run Epoch {}".format(ep))
-            #batch_i = 0
-            for im_batch, (cap_batch, seg_batch) in tqdm(
-                data, desc=f"Epoch {ep}", mininterval=(2 if has_internet() else 20)):
+            dataloader = tqdm(data, desc=f"Epoch {ep}", mininterval=5) if has_internet() else data
+            for im_batch, (cap_batch, seg_batch) in dataloader:
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
@@ -59,18 +57,29 @@ class Trainer():
                     kl_losses.append(kl_loss.cpu().detach())
                     if self.lcmvae.config.use_latent_regularizer:
                         lat_rec_losses.append(lat_rec_loss.cpu().detach())
-                new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
-                if new_loss < best_loss:
-                    print(f"\nSaving checkpoint... new best loss: {new_loss}")
-                    # # To save the individual components
-                    # save_checkpoint(self.lcmvae.vae.encoder, name=self.name)
-                    # save_checkpoint(self.lcmvae.vae.decoder, name=self.name)
-                    # if self.lcmvae.config.use_pre_conv_layer:
-                    #     save_checkpoint(
-                    #         self.lcmvae.vae.im_embed_pre_conv, name=self.name)
-                    save_model(self.lcmvae, name=self.name, save_dir=self.save_dir)
-                    best_loss = new_loss
-                if train_it % 200 == 0:
+                if train_it % 5 == 0:
+                    new_loss = np.mean(total_losses[-10:])
+                    if new_loss < best_loss:
+                        # # To save the individual components
+                        # save_checkpoint(self.lcmvae.vae.encoder, name=self.name)
+                        # save_checkpoint(self.lcmvae.vae.decoder, name=self.name)
+                        # if self.lcmvae.config.use_pre_conv_layer:
+                        #     save_checkpoint(
+                        #         self.lcmvae.vae.im_embed_pre_conv, name=self.name)
+                        save_model(self.lcmvae, name=self.name, save_dir=self.save_dir)
+                        best_loss = new_loss
+                        if self.downstream_criterion:
+                            print(
+                                f"It {train_it}: Total Loss: {total_loss.cpu().detach()}"
+                            )
+                        elif self.lcmvae.config.use_latent_regularizer:
+                            print(
+                                f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()},\t LatRec Loss: {lat_rec_loss.cpu().detach()}"
+                            )
+                        else:
+                            print(
+                                f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
+                            )
                     # log the loss training curves
                     plt.figure(figsize=(15, 5))
                     if self.downstream_criterion:
@@ -99,22 +108,22 @@ class Trainer():
                         ax3.plot(kl_losses)
                         ax3.title.set_text("KL Loss")
                     plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
-                    plt.clf()
+                    plt.close('all')
 
-                    if self.downstream_criterion:
-                        print(
-                            f"It {train_it}: Total Loss: {total_loss.cpu().detach()}"
-                        )
-                    elif self.lcmvae.config.use_latent_regularizer:
-                        print(
-                            f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()},\t LatRec Loss: {lat_rec_loss.cpu().detach()}"
-                        )
-                    else:
-                        print(
-                            f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
-                        )
                 train_it += 1
                 #batch_i += 1
+            if self.downstream_criterion:
+                print(
+                    f"It {train_it}: Total Loss: {total_loss.cpu().detach()}"
+                )
+            elif self.lcmvae.config.use_latent_regularizer:
+                print(
+                    f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()},\t LatRec Loss: {lat_rec_loss.cpu().detach()}"
+                )
+            else:
+                print(
+                    f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
+                )
         print("Done!")
 
         # log the loss training curves
@@ -145,8 +154,14 @@ class Trainer():
             ax3.plot(kl_losses)
             ax3.title.set_text("KL Loss")
         plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
-        plt.clf()
-
+        plt.close('all')
+        losses_df = pd.DataFrame({
+            'total_loss': pd.Series(total_losses, dtype=np.float64),
+            'rec_loss': pd.Series(rec_losses, dtype=np.float64),
+            'kl_losses': pd.Series(kl_losses, dtype=np.float64),
+            'lat_rec_losses': pd.Series(lat_rec_losses, dtype=np.float64)
+            })
+        losses_df.to_csv(f"{self.save_dir}/{self.name}_losses.csv", index=False)
 
 # class Trainer():
 #     def __init__(self, lcmvae, head, criterion, TP, experiment_name=None):

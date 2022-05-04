@@ -53,10 +53,10 @@ def save_model(model, checkpoint_file=None, name=None, save_dir="saved_models"):
         pass
 
     checkpoint_file = checkpoint_file if checkpoint_file is not None else model.checkpoint_file
-    if name is not None:
-        torch.save(model, f"{save_dir}/{checkpoint_file}_{name}")
-    else:
-        torch.save(model, f"{save_dir}/{checkpoint_file}")
+    save_path = f"{save_dir}/{checkpoint_file}_{name}" \
+        if name else f"{save_dir}/{checkpoint_file}"
+    torch.save(model, save_path)
+    print(f"Checkpoint Saved: {save_path}")
 
 
 def load_checkpoint(model, checkpoint_file=None, name=None, save_dir=None):
@@ -93,7 +93,7 @@ def log_losses(losses, name):
 
 
 def has_internet():
-    conn = httplib.HTTPSConnection("8.8.8.8", timeout=5)
+    conn = httplib.HTTPSConnection("8.8.8.8", timeout=2)
     try:
         conn.request("HEAD", "/")
         return True
