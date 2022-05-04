@@ -29,7 +29,7 @@ class Trainer():
 
         for ep in range(self.config.epochs):
             for im_batch, (cap_batch, seg_batch) in tqdm(
-                data, desc=f"Epoch {ep}", mininterval=5 if has_internet else 25):
+                data, desc=f"Epoch {ep}", mininterval=5 if has_internet() else 50):
                 # create a batch with 2 images for testing code -> (2, 224, 224, 3)
                 # target_batch = np.array(im_batch)
                 im_batch = im_batch.to(self.device)
@@ -66,6 +66,8 @@ class Trainer():
                         # if self.lcmvae.config.use_pre_conv_layer:
                         #     save_checkpoint(
                         #         self.lcmvae.vae.im_embed_pre_conv, name=self.name)
+                        if not has_internet():
+                            print('-'*40)
                         save_model(self.lcmvae, name=self.name, save_dir=self.save_dir)
                         best_loss = new_loss
                         if self.downstream_criterion:
