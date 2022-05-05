@@ -43,7 +43,10 @@ def main():
     experiment_name = "sample_run" \
         if len(sys.argv) == 1 else os.path.basename(sys.argv[1].split('.')[0]) 
     experiment_name += time.strftime("_%m%d_%H%M")
-    print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
+    print('-'*40)
+    print("Experiment: ", experiment_name)
+    print(f"GPU Type: {torch.cuda.get_device_name()}")
+    print('-'*40)
     pretrain = True
     pretest = False
     train = False
