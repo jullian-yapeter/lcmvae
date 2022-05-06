@@ -117,12 +117,21 @@ class StandAloneVAE(nn.Module):
                 x.shape[0], self.config.embed_dim, device=self.device)
             z = mean + torch.exp(log_sigma) * epsilon
         decoder_out = self.decoder(z)
-        return {
-            "reconstruction": decoder_out,
-            "mean": mean,
-            "log_sigma": log_sigma,
-            "z": z,
-        }
+        if self.config.mask_type == 'None':
+          return {
+              "reconstruction": decoder_out,
+              "mean": mean,
+              "log_sigma": log_sigma,
+              "z": z
+          }
+        else:
+          return {
+              "reconstruction": decoder_out,
+              "mean": mean,
+              "log_sigma": log_sigma,
+              "z": z,
+              'mask': self.Mask(x)
+          }
 
     def loss(self, vae_outputs, target_images, beta):
         reconstruction_images = vae_outputs["reconstruction"]
@@ -145,11 +154,20 @@ class StandAloneVAE(nn.Module):
         mean = encoder_out[:, :self.config.embed_dim]
         log_sigma = encoder_out[:, self.config.embed_dim:]
         decoder_out = self.decoder(mean)
-        return {
-            "reconstruction": decoder_out,
-            "mean": mean,
-            "log_sigma": log_sigma
-        }
+        if self.config.mask_type == 'None':
+          return {
+              "reconstruction": decoder_out,
+              "mean": mean,
+              "log_sigma": log_sigma
+          }
+        else:
+          return {
+              "reconstruction": decoder_out,
+              "mean": mean,
+              "log_sigma": log_sigma,
+              "mask": self.Mask(x)
+          }
+
 
     @staticmethod
     def kl_divergence(mu1, log_sigma1, mu2, log_sigma2):
