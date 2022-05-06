@@ -265,7 +265,7 @@ def vae_show_one_image(url='', img_path='', model=None, mask_ratio=0.25,
     
     
 mae_with_decoder = ViTMAEForPreTraining.from_pretrained("facebook/vit-mae-base")
-def lcmvae_show_masked_image(target, mask=None, patch_size=16):
+def show_masked_image(target, mask=None, patch_size=16):
     assert mask != None, "please set `mask`"
     
     unpatch_mask = mask.unsqueeze(-1).repeat(1, 1, patch_size**2 *3)

@@ -40,7 +40,7 @@ else:
     from params import TEST_PARAMS as TEP
     from params import PRETRAIN_DATASET_PARAMS
     
-from utils import denormalize_torch_to_cv2, count_parameters, lcmvae_show_masked_image
+from utils import denormalize_torch_to_cv2, count_parameters, show_masked_image
 
 
 def main():
@@ -134,7 +134,7 @@ def main():
             target = denormalize_torch_to_cv2(im, image_mean, image_std)
             reconstruction, mask = lcmvae.run(im[None], [cap])
             # reconstruction = svae.reconstruct(im[None])["reconstruction"]
-            masked_image = lcmvae_show_masked_image(target, mask=mask, patch_size=16)
+            masked_image = show_masked_image(target, mask=mask, patch_size=16)
             prediction = denormalize_torch_to_cv2(
                 reconstruction, image_mean, image_std)
             result = np.concatenate((target, masked_image, prediction), axis=1)
