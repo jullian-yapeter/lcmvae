@@ -42,6 +42,10 @@ else:
     from params import PRETRAIN_DATASET_PARAMS
     
 from utils import denormalize_torch_to_cv2, count_parameters, show_masked_image
+<<<<<<< HEAD
+=======
+
+>>>>>>> e1fecd1e375b88ad6f36bc17293604f37a8b1e0f
 
 def main():
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
@@ -145,11 +149,15 @@ def main():
             target = denormalize_torch_to_cv2(im, image_mean, image_std)
             reconstruction, mask = lcmvae.run(im[None], [cap])
             # reconstruction = svae.reconstruct(im[None])["reconstruction"]
+            masked_image = show_masked_image(target, mask=mask, patch_size=16)
             prediction = denormalize_torch_to_cv2(
                 reconstruction, image_mean, image_std)
+<<<<<<< HEAD
             # masked_img = torch.randint(0, 255, [224, 224, 3])
             print(mask)
             masked_image = show_masked_image(target, mask=mask, patch_size=16)
+=======
+>>>>>>> e1fecd1e375b88ad6f36bc17293604f37a8b1e0f
             result = np.concatenate((target, masked_image, prediction), axis=1)
             cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
 
@@ -185,10 +193,7 @@ def main():
             plt.subplot(122)
             plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
             plt.savefig(f"output/{experiment_name}_segmentation.jpg")
-
-        
-
-    
+  
 
 if __name__=="__main__":
     main()
