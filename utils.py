@@ -265,7 +265,7 @@ def vae_show_one_image(url='', img_path='', model=None, mask_ratio=0.25,
 
 
 mae_with_decoder = ViTMAEForPreTraining.from_pretrained("facebook/vit-mae-base")
-def lcmvae_show_masked_image(target, mask=None, patch_size=16):
+def show_masked_image(target, mask=None, patch_size=16):
     assert mask != None, "please set `mask`"
     
     unpatch_mask = mask.unsqueeze(-1).repeat(1, 1, patch_size**2 *3)
@@ -284,7 +284,7 @@ if __name__=="__main__":
     
     mask = torch.randint(0, 1, [1, 196])
     target = torch.randint(0, 255, [224, 224, 3])
-    masked_image = lcmvae_show_masked_image(target, mask=mask, patch_size=16)
+    masked_image = show_masked_image(target, mask=mask, patch_size=16)
     
     print(masked_image.shape)
     

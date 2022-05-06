@@ -15,7 +15,6 @@ from models.standalone_vae import StandAloneVAE
 from train import Trainer
 from test import Tester
 
-from utils import lcmvae_show_masked_image
 
 if len(sys.argv) > 1:
     print("Loading params from ", sys.argv[1])
@@ -42,12 +41,12 @@ else:
     from params import TEST_PARAMS as TEP
     from params import PRETRAIN_DATASET_PARAMS
     
-from utils import denormalize_torch_to_cv2, count_parameters
+from utils import denormalize_torch_to_cv2, count_parameters, show_masked_image
 
 def main():
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
-    pretrain = False
+    pretrain = True
     pretest = True
     train = False
     test = False
@@ -135,8 +134,7 @@ def main():
         # lcmvae = torch.load(
         #     f"saved_models/lcmvae_{experiment_name+'_pretrain'}").eval()
         lcmvae = torch.load(
-            "saved_models/lcmvae_lcmvae_large_0506_0008_pretrain").eval()
-        print(lcmvae)
+            f"saved_models/lcmvae_{experiment_name+'_pretrain'}").eval()
 
         tester = Tester(
             lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
@@ -151,7 +149,7 @@ def main():
                 reconstruction, image_mean, image_std)
             # masked_img = torch.randint(0, 255, [224, 224, 3])
             print(mask)
-            masked_image = lcmvae_show_masked_image(target, mask=mask, patch_size=16)
+            masked_image = show_masked_image(target, mask=mask, patch_size=16)
             result = np.concatenate((target, masked_image, prediction), axis=1)
             cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
 
