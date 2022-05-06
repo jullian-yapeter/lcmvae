@@ -49,6 +49,7 @@ class PatchMask():
         h = w = int((L//3)**.5)
         assert h * w == L//3
 
+        print(x.shape)
         x = x.reshape(N, h, w, 3, p, p)
         x = torch.einsum('nhwcpq->ncphqw', x)
         imgs = x.reshape(N, 3, h * p, w * p)

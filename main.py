@@ -11,9 +11,11 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 from models.basic_models.conv import ConvDecoder768
 from models.lcmvae import LCMVAE
-from models.standalone_vae import StandaloneVAE
+from models.standalone_vae import StandAloneVAE
 from train import Trainer
 from test import Tester
+
+from utils import lcmvae_show_masked_image
 
 if len(sys.argv) > 1:
     print("Loading params from ", sys.argv[1])
@@ -45,8 +47,8 @@ from utils import denormalize_torch_to_cv2, count_parameters
 def main():
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
     print('-'*40); print("Experiment: ", experiment_name); print('-'*40)
-    pretrain = True
-    pretest = False
+    pretrain = False
+    pretest = True
     train = False
     test = False
 
@@ -66,6 +68,15 @@ def main():
                                   detAnnFile=PRETRAIN_DATASET_PARAMS.det_ann_file,
                                   superclasses=["person", "vehicle"],
                                   from_pretrained=PRETRAIN_DATASET_PARAMS.from_pretrained)
+    
+    samll_len = 8
+    coco_val2017_samll = torch.utils.data.Subset(coco_val2017, 
+                                             list(range(0, samll_len)))
+    
+    data_loader_small = DataLoader(dataset = coco_val2017_samll, 
+                         batch_size=PRETRAIN_DATASET_PARAMS.batch_size, 
+                          shuffle=PRETRAIN_DATASET_PARAMS.shuffle, 
+                          num_workers=PRETRAIN_DATASET_PARAMS.num_workers)
 
     # image mean and std for reconstruction
     image_mean = torch.tensor(coco_val2017.feature_extractor.image_mean)
@@ -102,7 +113,7 @@ def main():
 
     if pretrain:
         pretrainer = Trainer(lcmvae, PTP, experiment_name=experiment_name+"_pretrain")
-        pretrainer.run(data=data_loader)
+        pretrainer.run(data=data_loader_small)
 
     if pretest:
         # # For loading modules separately
@@ -121,21 +132,27 @@ def main():
         # lcmvae.im_cap_encoder.vit.model = vit_model
         # lcmvae.im_cap_encoder.bert.model = bert_model
 
+        # lcmvae = torch.load(
+        #     f"saved_models/lcmvae_{experiment_name+'_pretrain'}").eval()
         lcmvae = torch.load(
-            f"saved_models/lcmvae_{experiment_name+'_pretrain'}").eval()
+            "saved_models/lcmvae_lcmvae_large_0506_0008_pretrain").eval()
+        print(lcmvae)
 
         tester = Tester(
             lcmvae, PTEP, experiment_name=experiment_name+"_pretest")
-        tester.run(data=data_loader)
+        tester.run(data=data_loader_small)
 
-        for i in range(10):
+        for i in range(1):
             im, (cap, _) = coco_val2017[i]
             target = denormalize_torch_to_cv2(im, image_mean, image_std)
             reconstruction, mask = lcmvae.run(im[None], [cap])
             # reconstruction = svae.reconstruct(im[None])["reconstruction"]
             prediction = denormalize_torch_to_cv2(
                 reconstruction, image_mean, image_std)
-            result = np.concatenate((target, prediction), axis=1)
+            # masked_img = torch.randint(0, 255, [224, 224, 3])
+            print(mask)
+            masked_image = lcmvae_show_masked_image(target, mask=mask, patch_size=16)
+            result = np.concatenate((target, masked_image, prediction), axis=1)
             cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
 
     if train:
@@ -146,7 +163,7 @@ def main():
         lcmvae.vae.decoder = decoder
         criterion = nn.CrossEntropyLoss(reduction="sum")
         trainer = Trainer(lcmvae, TP, experiment_name=experiment_name+"_train", downstream_criterion=criterion)
-        trainer.run(data=data_loader)
+        trainer.run(data=data_loader_small)
 
     if test:
         lcmvae = torch.load(
@@ -156,7 +173,7 @@ def main():
 
         tester = Tester(
             lcmvae, TEP, experiment_name=experiment_name+"_test", downstream_criterion=criterion)
-        tester.run(data=data_loader)
+        tester.run(data=data_loader_small)
 
         for i in range(10):
             im, (cap, seg) = coco_val2017[i]
