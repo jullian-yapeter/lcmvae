@@ -11,6 +11,9 @@ from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 import math
 import numpy as np
 
+from utils import denormalize_torch_to_cv2
+import cv2
+
 
 class SVAEP:
     checkpoint_file = "standalone_vae"
@@ -20,7 +23,7 @@ class SVAEP:
     # use_prev_conv_layer = True
     use_epsilon = True
     use_prev_conv_layer = False
-    mask_type = 'Pixel' #'Patch' 'Pixel'
+    mask_type = 'Patch' #'Patch' 'Pixel'
     mask_ratio = 0.5
 
     encoder_params = LINEAR_NETWORK_PARAMS()
@@ -210,9 +213,6 @@ class StandAloneVAE(nn.Module):
                / (2 * torch.exp(log_sigma2) ** 2) - 0.5
 
 
-
-
-
 from params import PRETRAIN_DATASET_PARAMS
 from dataset import MyCocoCaption, MyCocoCaptionDetection
 from torch.utils.data import DataLoader
@@ -249,7 +249,8 @@ for ep in range(epochs):
         imgs = imgs.to(device)
         target = imgs.clone().detach()
         outputs = svae.forward(imgs)
-        # print(outputs['mask'].shape); return;
+        print(outputs['mask'].shape, outputs['masked_img'].shape, outputs['reconstruction'].shape)
+        # torch.Size([batch_size, 224, 224]), torch.Size([batch_size, 3, 224, 224])
         
         total_loss, rec_loss, kl_loss = svae.loss(outputs, target, beta)
         total_loss.backward()
@@ -264,3 +265,24 @@ for ep in range(epochs):
         train_it += 1
 
 print("Done!")
+
+# test and visualization
+# image mean and std for reconstruction
+image_mean = torch.tensor(coco_val2017.feature_extractor.image_mean)
+image_std = torch.tensor(coco_val2017.feature_extractor.image_std)
+for i in range(1):
+    im, (cap, _) = coco_val2017[i]
+    # FIXME: add loaded svae model
+    svae = svae.eval()
+    
+    target = denormalize_torch_to_cv2(im, image_mean, image_std)
+    outpus = svae.reconstruct(im[None])
+    reconstruction = outpus["reconstruction"][0]
+    masked_image = outpus["masked_img"][0]
+    prediction = denormalize_torch_to_cv2(reconstruction, image_mean, image_std)
+    masked_image = denormalize_torch_to_cv2(masked_image, image_mean, image_std)
+    result = np.concatenate((target, masked_image, prediction), axis=1)
+    
+    # FIXME: add experiment_name
+    experiment_name = "test"
+    cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
