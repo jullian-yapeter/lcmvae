@@ -67,7 +67,7 @@ def main():
                              num_workers=DATASET_PARAMS.num_workers)
 
 
-    data_loader = [next(iter(data_loader))] # for testing only
+    # data_loader = [next(iter(data_loader))] # for testing only
     
     lcmvae = torch.load(
         f"{save_dir}/lcmvae_{experiment_name+'_pretrain'}")
