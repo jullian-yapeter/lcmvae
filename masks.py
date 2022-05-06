@@ -21,14 +21,16 @@ class PatchMask():
     def __init__(self, mask_ratio, patch_size):
         self.mask_ratio = mask_ratio
         self.patch_size = patch_size
+        self.grid_size = None
 
     def patchify(self, imgs):
         """
         imgs: (N, 3, H, W)
         x: (N, H*W*3, patch_size**2)
         """
-        p = self.patch_size
         N, _, H, W = imgs.shape
+        p = H // self.patch_size
+        self.grid_size = p
         assert H == W and H % p == 0
 
         h = w = H // p
@@ -43,7 +45,7 @@ class PatchMask():
         imgs: (N, 3, H, W)
         """
         N, L, _ = x.shape
-        p = self.patch_size
+        p = self.grid_size
         h = w = int((L//3)**.5)
         assert h * w == L//3
 
