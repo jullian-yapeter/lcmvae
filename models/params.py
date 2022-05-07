@@ -150,23 +150,11 @@ class STANDALONE_VAE_PARAMS:
     checkpoint_file = "standalone_vae"
     im_dims = [3, 224, 224]
     embed_dim = 768
-    use_linear_decoder = True
+    use_linear_decoder = False
     # use_prev_conv_layer = True
     use_epsilon = True
-    use_prev_conv_layer = False
-    mask_type = 'None' #'Patch' 'Pixel'
-    mask_ratio = 0.0
-
-    encoder_params = LINEAR_NETWORK_PARAMS()
-    encoder_params.output_dim = embed_dim * 2
-    encoder_params.activation = nn.LeakyReLU()
-    encoder_params.linear_layer_params = [
-        {"in_dim": 1536, "out_dim": 1536},
-        {"in_dim": 1536, "out_dim": 1536},
-        {"in_dim": 1536, "out_dim": 1536},
-        {"in_dim": 1536, "out_dim": 768},
-        {"in_dim": 768, "out_dim": encoder_params.output_dim}
-    ]
+    mask_type = 'None'  # 'Patch' 'Pixel'
+    mask_ratio = 0.5
 
     decoder_params = DECODER_PARAMS()
     decoder_params.im_dims = (3, 224, 224)
