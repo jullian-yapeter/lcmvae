@@ -169,4 +169,3 @@ class StandAloneVAE(nn.Module):
         return (log_sigma2 - log_sigma1) + (torch.exp(log_sigma1) ** 2 + (mu1 - mu2) ** 2) \
                / (2 * torch.exp(log_sigma2) ** 2) - 0.5
 
-from
