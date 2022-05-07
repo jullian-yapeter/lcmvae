@@ -244,7 +244,6 @@ class VAEPreTrainer():
                 total_losses.append(total_loss.cpu().detach())
                 rec_losses.append(rec_loss.cpu().detach())
                 kl_losses.append(kl_loss.cpu().detach())
-                new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                 if train_it % 5 == 0:
                     new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
                     if new_loss < best_loss:
@@ -270,6 +269,7 @@ class VAEPreTrainer():
         losses_df = pd.DataFrame({
             'total_loss': pd.Series(total_losses, dtype=np.float64),
             'rec_loss': pd.Series(rec_losses, dtype=np.float64),
+            'kl_loss': pd.Series(kl_losses, dtype=np.float64),
             })
         losses_df.to_csv(f"{self.save_dir}/{self.name}_losses.csv", index=False)
         print("Done!")
