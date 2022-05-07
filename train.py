@@ -214,14 +214,13 @@ class Trainer():
 
 
 class VAEPreTrainer():
-    def __init__(self, model, config, mask_maker=None, experiment_name=None, save_dir=None):
+    def __init__(self, model, config, experiment_name=None, save_dir=None):
         self.save_dir = save_dir
         self.config = config
         self.name = experiment_name
         self.device = torch.device(
             'cuda' if torch.cuda.is_available() else 'cpu')
         self.model = model.to(self.device).train()
-        self.mask_maker = mask_maker
         self.opt = torch.optim.Adam(self.model.parameters(),
                                     lr=self.config.learning_rate)
 
@@ -232,26 +231,26 @@ class VAEPreTrainer():
         for ep in range(self.config.epochs):
             print("Run Epoch {}".format(ep))
             batch_i = 0
-            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc= f"batch_{batch_i}", mininterval=10):
+            for im_batch, (cap_batch, seg_batch) in tqdm(data, desc=f"batch_{batch_i}", mininterval=10):
                 im_batch = im_batch.to(self.device)
-                if self.mask_maker: 
-                    im_batch, masks = self.mask_maker(im_batch)
                 self.opt.zero_grad()
-                outputs = self.model(im_batch, cap_batch)
+                outputs = self.model.forward(im_batch)
                 total_loss, rec_loss, kl_loss = self.model.loss(
-                    im_batch, outputs, self.config.beta)
+                    outputs, im_batch, self.config.beta)
                 total_loss.backward()
-                
+
                 self.opt.step()
 
                 total_losses.append(total_loss.cpu().detach())
                 rec_losses.append(rec_loss.cpu().detach())
                 kl_losses.append(kl_loss.cpu().detach())
                 new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
-                if new_loss < best_loss:
-                    save_checkpoint(self.model, name=self.name, save_dir=self.save_dir)
-                    best_loss = new_loss
-                if train_it % 2000 == 0:
+                if train_it % 5 == 0:
+                    new_loss = sum(total_losses[-10:]) / len(total_losses[-10:])
+                    if new_loss < best_loss:
+                        save_model(self.model, name=self.name, save_dir=self.save_dir)
+                        best_loss = new_loss
+                if train_it % 100 == 0:
                           # log the loss training curves
                     plt.figure(figsize=(15, 5))
                     ax1 = plt.subplot(131)
@@ -268,7 +267,11 @@ class VAEPreTrainer():
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                     )
                 train_it += 1
-                batch_i += 1
+        losses_df = pd.DataFrame({
+            'total_loss': pd.Series(total_losses, dtype=np.float64),
+            'rec_loss': pd.Series(rec_losses, dtype=np.float64),
+            })
+        losses_df.to_csv(f"{self.save_dir}/{self.name}_losses.csv", index=False)
         print("Done!")
 
   

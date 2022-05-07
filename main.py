@@ -11,7 +11,6 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 from models.basic_models.conv import ConvDecoder768
 from models.lcmvae import LCMVAE
-from models.standalone_vae import StandAloneVAE
 from train import Trainer
 from test import Tester
 from params import PRETRAIN_PARAMS as PTP
