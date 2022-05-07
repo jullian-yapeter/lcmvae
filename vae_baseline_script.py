@@ -265,7 +265,7 @@ with open(f"{save_dir}/params_{experiment_name}.py", 'w+') as f:
     f.write(f"# PARAMS for Experiment: {experiment_name}\n")
     f.write(f"# GPU Type: {torch.cuda.get_device_name()}\n\n")
     f.write(
-        "from models.basic_models.sparams import LINEAR_NETWORK_PARAMS, DECODER_PARAMS\n"
+        "from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS\n"
         "from utils import has_internet\n"
         "import math, torch, torch.nn as nn\n\n")
     lines = map(inspect.getsource, [
