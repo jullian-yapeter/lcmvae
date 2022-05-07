@@ -58,7 +58,6 @@ val_data_loader = DataLoader(dataset = val2017,
                          batch_size=VAL_DATASET_PARAMS.batch_size,
                          shuffle=VAL_DATASET_PARAMS.shuffle, 
                          num_workers=VAL_DATASET_PARAMS.num_workers)
-val_data_loader = [next(iter(val_data_loader))]
 
 def get_rec_example(experiment_name, target_id = 0, validating=True, mask_ratio=0): 
     lcmvae = torch.load(
@@ -122,19 +121,33 @@ df_losses = pd.DataFrame(columns=labels)
 
 mask_ratio = float(sys.argv[1])
 for mod in exp_list:
-    mean_loss, all_losses = get_rec_loss(mod, mask_ratio=mask_ratio)
+    mod_params = importlib.import_module(f"saved_models.{mod}.params_{mod}")
+    lcmvae = torch.load(
+            f"saved_models/{mod}/lcmvae_{mod+'_pretrain'}").eval()
+    lcmvae.im_cap_encoder.vit.model.config.mask_ratio = mask_ratio
+    rec_losses = []
+    for im_batch, (cap_batch, seg_batch) in tqdm(val_data_loader, desc=f'validation {mod}', mininterval=60):
+        im_batch = im_batch.to(device)
+        target = im_batch.clone().detach()
+        with torch.no_grad():
+            outputs, _ = lcmvae(im_batch, cap_batch)
+        losses = lcmvae.loss(
+            outputs, target, mod_params.PRETRAIN_PARAMS.beta, mod_params.PRETRAIN_PARAMS.delta)
+        rec_losses.append(losses[1].cpu().detach().item())
+    mean_loss = np.mean(rec_losses)
+
     print(mod, mean_loss)
     to_add = pd.DataFrame(
         {
-        'model': [mod] * len(all_losses),
-        'mask': ['No' if 'noMask' in mod else 'Yes'] * len(all_losses),
-        'caption': ['No' if 'noCap' in mod else 'Yes'] * len(all_losses),
-        'variational': ['No' if 'noVar' in mod else 'Yes'] * len(all_losses),
-        'latent_reg': ['No' if 'noLat' in mod else 'Yes'] * len(all_losses),
-        'pre_conv': ['No' if 'noPreC' in mod else 'Yes'] * len(all_losses),
-        'img_id': list(range(len(all_losses))),
-        'rec_mask_ratio': [mask_ratio,] * len(all_losses),
-        'rec_loss': all_losses
+        'model': [mod] * len(rec_losses),
+        'mask': ['No' if 'noMask' in mod else 'Yes'] * len(rec_losses),
+        'caption': ['No' if 'noCap' in mod else 'Yes'] * len(rec_losses),
+        'variational': ['No' if 'noVar' in mod else 'Yes'] * len(rec_losses),
+        'latent_reg': ['No' if 'noLat' in mod else 'Yes'] * len(rec_losses),
+        'pre_conv': ['No' if 'noPreC' in mod else 'Yes'] * len(rec_losses),
+        'img_id': list(range(len(rec_losses))),
+        'rec_mask_ratio': [mask_ratio,] * len(rec_losses),
+        'rec_loss': rec_losses
         }
     )
 
