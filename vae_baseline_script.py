@@ -12,6 +12,7 @@ from models.basic_models.params import LINEAR_NETWORK_PARAMS, DECODER_PARAMS
 
 import math
 import numpy as np
+import sys
 
 
 class STANDALONE_VAE_PARAMS:
@@ -20,7 +21,7 @@ class STANDALONE_VAE_PARAMS:
     embed_dim = 768
     use_linear_decoder = False
     # use_prev_conv_layer = True
-    use_epsilon = True
+    use_epsilon = not ('noVar' in sys.argv)
     mask_type = sys.argv[2]  # 'Patch' 'Pixel'
     mask_ratio = 0.75
 
@@ -129,7 +130,7 @@ class StandaloneVAE(nn.Module):
 
     def forward(self, x):
         if self.config.mask_type != 'None':
-            x, mask = self.Mask(x)[0]
+            x, mask = self.Mask(x)
 
         encoder_out = self.encoder(x)
         mean = encoder_out[:, :self.config.embed_dim]

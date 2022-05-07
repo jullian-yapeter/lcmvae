@@ -262,17 +262,36 @@ class VAEPreTrainer():
                     ax3.plot(kl_losses)
                     ax3.title.set_text("KL Loss")
                     plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+                    plt.close('all')
                     print(
                         f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
                     )
                 train_it += 1
-        losses_df = pd.DataFrame({
-            'total_loss': pd.Series(total_losses, dtype=np.float64),
-            'rec_loss': pd.Series(rec_losses, dtype=np.float64),
-            'kl_loss': pd.Series(kl_losses, dtype=np.float64),
-            })
-        losses_df.to_csv(f"{self.save_dir}/{self.name}_losses.csv", index=False)
-        print("Done!")
+
+            plt.figure(figsize=(15, 5))
+            ax1 = plt.subplot(131)
+            ax1.plot(total_losses)
+            ax1.title.set_text("Total Loss")
+            ax2 = plt.subplot(132)
+            ax2.plot(rec_losses)
+            ax2.title.set_text("Reconstruction Loss")
+            ax3 = plt.subplot(133)
+            ax3.plot(kl_losses)
+            ax3.title.set_text("KL Loss")
+            plt.savefig(f"{self.save_dir}/{self.name}_plot.jpg")
+            plt.close('all')
+            print(
+                f"It {train_it}: Total Loss: {total_loss.cpu().detach()}, \t Rec Loss: {rec_loss.cpu().detach()},\t KL Loss: {kl_loss.cpu().detach()}"
+            )
+            plt.close('all')
+
+            losses_df = pd.DataFrame({
+                'total_loss': pd.Series(total_losses, dtype=np.float64),
+                'rec_loss': pd.Series(rec_losses, dtype=np.float64),
+                'kl_loss': pd.Series(kl_losses, dtype=np.float64)
+                })
+            losses_df.to_csv(f"{self.save_dir}/{self.name}_losses.csv", index=False)
+            print("Done!")
 
   
 
