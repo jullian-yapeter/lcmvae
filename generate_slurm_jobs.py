@@ -8,7 +8,7 @@ except:
 
 for mask_type in ['Patch', 'Pixel']:
     for noVar in [True, False]:
-        with open(f"slurm_jobs/svae_{mask_type}", 'w+') as f:
+        with open(f"slurm_jobs/svae_{mask_type}{'_noVar' if noVar else ''}", 'w+') as f:
             f.write(f"#!/bin/bash\n#SBATCH --partition=gpu\n#SBATCH --gres=gpu:1\n#SBATCH --ntasks=1\n#SBATCH --cpus-per-task=16\n#SBATCH --mem=24GB\n#SBATCH --time=30:00:00\n#SBATCH --account=schweigh_422\n"
                     "#SBATCH --output=/project/schweigh_422/DOSE_project/lcmvae/slurm_outputs/%x_%j.out"
                     "\nexport TMPDIR=/scratch1/dongzeye/tmp\ncd /project/schweigh_422/DOSE_project/lcmvae/\n\nmodule purge\nmodule load gcc/11.2.0 nvidia-hpc-sdk/21.7\n\n"
