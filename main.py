@@ -11,7 +11,7 @@ from dataset import MyCocoCaption, MyCocoCaptionDetection
 
 from models.basic_models.conv import ConvDecoder768
 from models.lcmvae import LCMVAE
-from models.standalone_vae import StandaloneVAE
+from models.standalone_vae import StandAloneVAE
 from train import Trainer
 from test import Tester
 
@@ -40,7 +40,8 @@ else:
     from params import TEST_PARAMS as TEP
     from params import PRETRAIN_DATASET_PARAMS
     
-from utils import denormalize_torch_to_cv2, count_parameters
+from utils import denormalize_torch_to_cv2, count_parameters, show_masked_image
+
 
 def main():
     experiment_name = 'lcmvae_large' + time.strftime("_%m%d_%H%M")
@@ -133,9 +134,10 @@ def main():
             target = denormalize_torch_to_cv2(im, image_mean, image_std)
             reconstruction, mask = lcmvae.run(im[None], [cap])
             # reconstruction = svae.reconstruct(im[None])["reconstruction"]
+            masked_image = show_masked_image(target, mask=mask, patch_size=16)
             prediction = denormalize_torch_to_cv2(
                 reconstruction, image_mean, image_std)
-            result = np.concatenate((target, prediction), axis=1)
+            result = np.concatenate((target, masked_image, prediction), axis=1)
             cv2.imwrite(f"output/{experiment_name}_{i}.jpg", result)
 
     if train:

@@ -1,4 +1,3 @@
-import imp
 from utils import save_checkpoint, save_model
 
 import numpy as np
