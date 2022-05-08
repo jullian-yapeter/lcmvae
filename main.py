@@ -165,15 +165,15 @@ def main():
             print(f"Actual classes: {torch.unique(seg)}")
             print(f"Predicted classes: {torch.unique(prediction)}")
             plt.figure(figsize=(12, 5))
-            plt.subplot(121)
+            plt.subplot(131)
+            target = denormalize_torch_to_cv2(im, image_mean, image_std)
+            plt.imshow(target[:, :, ::-1])
+            plt.subplot(132)
             plt.imshow(seg.squeeze(), vmin=0, vmax=9)
-            plt.subplot(122)
+            plt.subplot(133)
             plt.imshow(prediction.squeeze(), vmin=0, vmax=9)
             plt.savefig(f"output/{experiment_name}_segmentation.jpg")
 
-        
-
-    
 
 if __name__=="__main__":
     main()
