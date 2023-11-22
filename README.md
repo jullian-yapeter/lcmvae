@@ -7,7 +7,7 @@ Spring 2022 • University of Southern California
 
 **Team Members:  Lei Cao, Yuncheng Qiu, Jullian Yapeter, Dongze Ye**
 
-# Langauge-Conditioned Variational Auto-Encoder
+# Language-Conditioned Variational Auto-Encoder
 
 
 ![architecture diagram](https://github.com/jullian-yapeter/lcmvae/blob/main/figures/lcmvae_architecture.png)
